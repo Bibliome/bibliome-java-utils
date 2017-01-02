@@ -2,3 +2,6 @@ expose-repository.sh
 bin/
 lib/
 target/
+.classpath
+.project
+.settings/
