@@ -1,0 +1,117 @@
+<project
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>fr.jouy.inra.maiage.bibliome</groupId>
+  <artifactId>bibliome-utils</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>Bibliome Utils</name>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <repositories>
+    <!--
+	mvn install:install-file -DcreateChecksum=true -Dfile=LEJARFILE -DgroupId=GROUP -DartifactId=ID -Dpackaging=jar -Dversion=VERSION -DlocalRepositoryPath=LOCALDIR
+    -->
+    <repository>
+      <id>bibliome</id>
+      <url>http://bibliome.jouy.inra.fr/maven-repository</url>
+    </repository>
+  </repositories>
+
+  <build>
+    <plugins>
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-compiler-plugin</artifactId>
+	<version>3.1</version>
+	<configuration>
+	  <source>1.7</source>
+	  <target>1.7</target>
+	  <compilerArgument>-proc:none</compilerArgument>
+	</configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>javacc-maven-plugin</artifactId>
+        <version>2.6</version>
+        <executions>
+          <execution>
+            <id>tabular-parser</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>javacc</goal>
+            </goals>
+            <configuration>
+              <errorReporting>true</errorReporting>
+              <buildParser>true</buildParser>
+              <keepLineColumn>true</keepLineColumn>
+              <unicodeInput>true</unicodeInput>
+              <debugParser>true</debugParser>
+              <sanityCheck>true</sanityCheck>
+              <buildTokenManager>true</buildTokenManager>
+              <sourceDirectory>src/main/resources/org/bibliome/util/pattern/tabular/parser</sourceDirectory>
+              <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>yatea-pattern-parser</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>javacc</goal>
+            </goals>
+            <configuration>
+              <errorReporting>true</errorReporting>
+              <buildParser>true</buildParser>
+              <keepLineColumn>true</keepLineColumn>
+              <unicodeInput>true</unicodeInput>
+              <debugParser>true</debugParser>
+              <sanityCheck>true</sanityCheck>
+              <buildTokenManager>true</buildTokenManager>
+              <sourceDirectory>src/main/resources/org/bibliome/util/yatea/pattern/parser</sourceDirectory>
+              <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.obo</groupId>
+      <artifactId>obo</artifactId>
+      <version>UNKNOWN</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.bbop</groupId>
+      <artifactId>bbop</artifactId>
+      <version>UNKNOWN</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.ggf.drmaa</groupId>
+      <artifactId>drmaa</artifactId>
+      <version>UNKNOWN</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.googlecode.json-simple</groupId>
+      <artifactId>json-simple</artifactId>
+      <version>1.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.javassist</groupId>
+      <artifactId>javassist</artifactId>
+      <version>3.22.0-CR1</version>
+    </dependency>
+  </dependencies>
+</project>
