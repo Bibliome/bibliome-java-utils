@@ -1,3 +1,4 @@
 expose-repository.sh
 bin/
 lib/
+target/
