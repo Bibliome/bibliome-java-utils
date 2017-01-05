@@ -1,6 +1,27 @@
-/**
- * JavaCC template file created by SF JavaCC plugin 1.5.17+ wizard for JavaCC 1.5.0+
- */options{  JDK_VERSION = "1.5";  static = false;}PARSER_BEGIN(TabularPatternParser)package org.bibliome.util.pattern.tabular.parser;
+/*
+Copyright 2016, 2017 Institut National de la Recherche Agronomique
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+options
+{
+  JDK_VERSION = "1.5";
+  static = false;
+}
+
+PARSER_BEGIN(TabularPatternParser)
+package org.bibliome.util.pattern.tabular.parser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +58,8 @@ import org.bibliome.util.pattern.tabular.expression.StringReference;
 @SuppressWarnings("all")
 public class TabularPatternParser {
   private static final String unEscape(Token t) {
-    return unEscape(t.image.substring(1, t.image.length() - 1));  }
+    return unEscape(t.image.substring(1, t.image.length() - 1));
+  }
   
   private static final String unEscape(String s) {
     boolean esc = false;
@@ -71,7 +93,8 @@ public class TabularPatternParser {
   }
 
   private int getRegexpFlag(char c) {
-    switch (c) {		case 'i': return Pattern.CASE_INSENSITIVE;
+    switch (c) {
+		case 'i': return Pattern.CASE_INSENSITIVE;
 		case 'd': return Pattern.UNIX_LINES;
 		case 'm': return Pattern.MULTILINE;
 		case 's': return Pattern.DOTALL;
@@ -81,8 +104,18 @@ public class TabularPatternParser {
 		case 'l': return Pattern.LITERAL;
 		case 'c': return Pattern.CANON_EQ;
     }
-    throw new RuntimeException("invalid regular expression flag: " + c);  }
-}PARSER_END(TabularPatternParser)SKIP: {  " "| "\r"| "\t"| "\n"}
+    throw new RuntimeException("invalid regular expression flag: " + c);
+  }
+}
+
+PARSER_END(TabularPatternParser)
+
+SKIP: {
+  " "
+| "\r"
+| "\t"
+| "\n"
+}
 TOKEN: {
   < LBRACKET : "[" >
 | < RBRACKET : "]" >
@@ -128,7 +161,7 @@ TOKEN: {
   | ("\\"(["n", "t", "b", "r", "f", "\\", "'", "\"", "/"]
   | ["0"-"7"](["0"-"7"])?
   | ["0"-"3"]["0"-"7"]["0"-"7"])))*
-  "/" (["i", "d", "m", "s", "u", "x", "U" ])*>
+  "/" (["i", "d", "m", "s", "u", "x", "U" ])*>
 | < OPTION   : "?" >
 | < PLUS     : "+" >
 | < STAR     : "*" >
@@ -241,60 +274,94 @@ private boolean reluctant():
   }
 }
 
-private Predicate<List<String>,TabularContext,TabularExpression> predicate():{
+private Predicate<List<String>,TabularContext,TabularExpression> predicate():
+{
   Quantifier quantifier = Quantifier.DEFAULT;
-  TabularExpression expr;}{
+  TabularExpression expr;
+}
+{
   expr=expression() (quantifier=quantifier())?
-  { return new Predicate<List<String>,TabularContext,TabularExpression>(quantifier, expr); }}
-
-public TabularExpression expression():{
-  TabularExpression expr;}{
-  expr=or()  { return expr; }}
-
-private TabularExpression or():{  TabularExpression expr;
-  TabularExpression e;
-}{
-  expr=and() (< OR > e=and() { expr = new Or(expr, e); })*  { return expr; }
+  { return new Predicate<List<String>,TabularContext,TabularExpression>(quantifier, expr); }
 }
 
-private TabularExpression and():{
+public TabularExpression expression():
+{
   TabularExpression expr;
-  TabularExpression e;}{
-  expr=not() (< AND > e=not() { expr = new And(expr, e); })*  { return expr; }}
+}
+{
+  expr=or()
+  { return expr; }
+}
 
-private TabularExpression not():{
-  TabularExpression expr;}{
+private TabularExpression or():
+{
+  TabularExpression expr;
+  TabularExpression e;
+}
+{
+  expr=and() (< OR > e=and() { expr = new Or(expr, e); })*
+  { return expr; }
+}
+
+private TabularExpression and():
+{
+  TabularExpression expr;
+  TabularExpression e;
+}
+{
+  expr=not() (< AND > e=not() { expr = new And(expr, e); })*
+  { return expr; }
+}
+
+private TabularExpression not():
+{
+  TabularExpression expr;
+}
+{
   expr=comp() { return expr; }
-| < NOT > expr=comp() { return new Not(expr); }}
+| < NOT > expr=comp() { return new Not(expr); }
+}
 
-private TabularExpression comp():{
-  TabularExpression expr = null;}{
+private TabularExpression comp():
+{
+  TabularExpression expr = null;
+}
+{
   expr=atom() (expr=compCont(expr))?
   { return expr; }
 | < ANY > (expr=compCont(expr))?
-  { return expr; }}
+  { return expr; }
+}
 
 private TabularExpression compCont(TabularExpression left):
 {
   NumericComparisonOperator nOp;
   StringComparisonOperator sOp;
   TabularExpression right;
-  Pattern r;}{
+  Pattern r;
+}
+{
   nOp=nCompOp() right=atom() { return new IntComparison(nOp, left, right); }
 | sOp=sCompOp() right=atom() { return new StringComparison(sOp, left, right); }
-| < RE > r=regex() { return new MatchRegexp(left, r); }}
+| < RE > r=regex() { return new MatchRegexp(left, r); }
+}
 
 private NumericComparisonOperator nCompOp():
-{}{
+{
+}
+{
   < EQ > { return NumericComparisonOperator.EQ; }
 | < NE > { return NumericComparisonOperator.NE; }
 | < LT > { return NumericComparisonOperator.LT; }
 | < GT > { return NumericComparisonOperator.GT; }
 | < LE > { return NumericComparisonOperator.LE; }
-| < GE > { return NumericComparisonOperator.GE; }}
+| < GE > { return NumericComparisonOperator.GE; }
+}
 
 private StringComparisonOperator sCompOp():
-{}{
+{
+}
+{
   < SEQ > { return StringComparisonOperator.EQ; }
 | < SNE > { return StringComparisonOperator.NE; }
 | < SW > { return StringComparisonOperator.STARTS_WITH; }
@@ -307,14 +374,17 @@ private TabularExpression atom():
   String s;
   int i;
   TabularExpression expr;
-  Pattern r;}{
+  Pattern r;
+}
+{
   s=string() { return new StringConstant(s); }
 | i=integer() { return new IntConstant(i); }
 | < TRUE > { return BooleanConstant.TRUE; }
 | < FALSE > { return BooleanConstant.FALSE; }
 | < REF > expr=reference() { return expr; }
 | < LPAREN > expr=expression() < RPAREN > { return expr; }	
-| r=regex() { return new DefaultMatchRegexp(r); }}
+| r=regex() { return new DefaultMatchRegexp(r); }
+}
 
 private TabularExpression reference():
 {
@@ -327,20 +397,29 @@ private TabularExpression reference():
 | t=< DQUOTED > { return new StringReference(unEscape(t)); }
 }
 
-private String string():{
-  Token t;}{
+private String string():
+{
+  Token t;
+}
+{
   t=< UNQUOTED > { return t.image; }
 | t=< SQUOTED > { return unEscape(t); }
 | t=< DQUOTED > { return unEscape(t); }
 }
 
-private int integer():{
-  Token t;}{
-  t=< INTEGER > { return Integer.parseInt(t.image); }}
-
-private Pattern regex():{
+private int integer():
+{
   Token t;
-}{
+}
+{
+  t=< INTEGER > { return Integer.parseInt(t.image); }
+}
+
+private Pattern regex():
+{
+  Token t;
+}
+{
   t=< RQUOTED >
   {
     try {
@@ -349,12 +428,14 @@ private Pattern regex():{
       int flags = 0;
       for (int i = slash + 1; i < t.image.length(); ++i) {
         char c = t.image.charAt(i);
-        flags |= getRegexpFlag(c);      }
+        flags |= getRegexpFlag(c);
+      }
       return Pattern.compile(pattern, flags);
       
     }
     catch (PatternSyntaxException e) {
       throw new ParseException(e.getMessage());
     }
-  }}
+  }
+}
 

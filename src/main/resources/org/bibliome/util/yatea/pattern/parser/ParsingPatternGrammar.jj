@@ -1,7 +1,28 @@
-/**
- * JavaCC template file created by SF JavaCC plugin 1.5.17+ wizard for JavaCC 1.5.0+
- */options{  JDK_VERSION = "1.5";
-    static = false;}PARSER_BEGIN(ParsingPatternParser)package org.bibliome.util.yatea.pattern.parser;
+/*
+Copyright 2016, 2017 Institut National de la Recherche Agronomique
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+options
+{
+  JDK_VERSION = "1.5";
+  
+  static = false;
+}
+
+PARSER_BEGIN(ParsingPatternParser)
+package org.bibliome.util.yatea.pattern.parser;
 
 import org.bibliome.util.yatea.pattern.Chunk;
 import org.bibliome.util.yatea.pattern.Subterm;
@@ -9,21 +30,43 @@ import org.bibliome.util.yatea.pattern.SubtermRole;
 import org.bibliome.util.yatea.pattern.Word;
 
 public class ParsingPatternParser {
-}PARSER_END(ParsingPatternParser)SKIP :{  " "| "\r"| "\t"| "\n"}TOKEN : {
+}
+
+PARSER_END(ParsingPatternParser)
+
+SKIP :
+{
+  " "
+| "\r"
+| "\t"
+| "\n"
+}
+
+TOKEN : 
+{
   < OPEN  : "(" >
 | < CLOSE : ")" >
 | < ROLE  : ("<=" ["H", "M"] ">") >
-| < WORD  : (["A"-"Z", "a"-"z", "0"-"9", "_", "-"])+ >}
-public Chunk chunk():{
+| < WORD  : (["A"-"Z", "a"-"z", "0"-"9", "_", "-"])+ >
+}
+
+public Chunk chunk():
+{
   Chunk chunk = new Chunk();
   Subterm subterm;
   Token t;
-}{
+}
+{
   < OPEN > (subterm=subterm() (t=< ROLE > { subterm.setRole(SubtermRole.get(t.image.charAt(2))); })? { chunk.addSubterm(subterm); })+ < CLOSE >
-  { return chunk; }}
+  { return chunk; }
+}
 
-private Subterm subterm():{
+private Subterm subterm():
+{
   Chunk chunk;
-  Token t;}{
+  Token t;
+}
+{
   chunk=chunk() { return chunk; }
-| t=< WORD > { return new Word(t.image); }}
+| t=< WORD > { return new Word(t.image); }
+}
