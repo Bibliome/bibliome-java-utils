@@ -41,7 +41,7 @@ public class Quantifier {
 	
 	private Quantifier(String operator, int minOccurrences, Integer maxOccurrences, QuantifierType type) {
 		super();
-		this.operator = operator + type.operatorModifier;
+		this.operator = operator == null ? null : operator + type.operatorModifier;
 		this.minOccurrences = minOccurrences;
 		this.maxOccurrences = maxOccurrences;
 		this.type = type;
@@ -92,7 +92,7 @@ public class Quantifier {
 		sb.append(minOccurrences);
 		if (maxOccurrences == null)
 			sb.append(',');
-		else if (maxOccurrences == minOccurrences) {
+		else if (maxOccurrences.intValue() != minOccurrences) {
 			sb.append(',');
 			sb.append(maxOccurrences);
 		}
