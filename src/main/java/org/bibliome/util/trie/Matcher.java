@@ -34,6 +34,7 @@ public class Matcher<T> {
 	private final List<Match<T>> matches = new ArrayList<Match<T>>();
 	private final List<Match<T>> candidates = new ArrayList<Match<T>>();
 	private int prec = -1;
+	@SuppressWarnings("unused")
 	private char c;
 	private char cc;
 	private boolean skipSearch = false;
@@ -76,6 +77,7 @@ public class Matcher<T> {
 	 * @param pos
 	 */
 	public void start(int pos) {
+//		System.err.format("do  start: %d - %d - %c\n", pos, prec, c);
 		candidates.add(new Match<T>(pos, trie.getRoot()));			
 	}
 
@@ -124,7 +126,7 @@ public class Matcher<T> {
 	}
 
 	private void setChar(char c) {
-		prec = this.c;
+		//prec = this.c;
 		this.c = c;
 		cc = control.canonize(prec, c);
 		skipSearch  = control.skipSearch(prec, c);
@@ -139,9 +141,12 @@ public class Matcher<T> {
 		setChar(c);
 		if (control.canEnd(prec, c))
 			finish(pos);
-		if (control.canStart(prec, c))
+		if (control.canStart(prec, c)) {
+//			System.err.format("can start: %d - %d - %c\n", pos, prec, c);
 			start(pos);
+		}
 		match();
+		prec = c;
 	}
 	
 	/**
