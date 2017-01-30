@@ -1,7 +1,6 @@
 #!/bin/bash
 
-DOC_FILES="doc/html"
-LIB_FILES="lib/*.jar"
+LIB_FILES="target/lib/*.jar target/*.jar"
 
 INSTALL_DIR="$(readlink -m $1)"
 BIN_DIR="$INSTALL_DIR/bin"
@@ -13,12 +12,9 @@ then
     mkdir -p "$INSTALL_DIR"
     rm -f -r "$BIN_DIR"
     mkdir "$BIN_DIR"
-    rm -f -r "$DOC_DIR"
-    mkdir "$DOC_DIR"
     rm -f -r "$LIB_DIR"
     mkdir "$LIB_DIR"
 
-    cp -f -r $DOC_FILES "$DOC_DIR"
     cp -f -r $LIB_FILES "$LIB_DIR"
 fi
 
@@ -28,3 +24,4 @@ fi
 ./make-java-launcher.sh "$LIB_DIR" "$BIN_DIR"/alvisae-diff-biotopes  org.bibliome.util.alvisae.BiotopesDiff2013
 ./make-java-launcher.sh "$LIB_DIR" "$BIN_DIR"/tbrep                  org.bibliome.util.pattern.tabular.TabularPattern
 ./make-java-launcher.sh "$LIB_DIR" "$BIN_DIR"/sample                 org.bibliome.util.Sampler
+./make-java-launcher.sh "$LIB_DIR" "$BIN_DIR"/select-pubmed          org.bibliome.util.pubmed.PubMedSelect
