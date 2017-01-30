@@ -103,6 +103,7 @@ public abstract class CLIOParser {
 	/**
 	 * Parse the specified command line.
 	 * @param args
+	 * @return either one option interrupted the parsing
 	 * @throws CLIOException
 	 */
 	public boolean parse(String[] args) throws CLIOException {

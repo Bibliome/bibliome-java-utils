@@ -36,7 +36,7 @@ public abstract class DOMBuilderHandler extends DefaultHandler {
 	private final DocumentBuilder docBuilder;
 	private Document doc = null;
 	private Node current = null;
-	
+
 	/**
 	 * Creates a DOM builder handler using the specified document builder to crete DOM nodes.
 	 * @param docBuilder
@@ -54,15 +54,24 @@ public abstract class DOMBuilderHandler extends DefaultHandler {
 	}
 	
 	@Override
-	public void endElement(String arg0, String arg1, String arg2)
-			throws SAXException {
-		if (doc == null)
-			return;
+	public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
+		characters(ch, start, length);
+	}
+	
+	private void flushText() {
 		if (sb.length() > 0) {
 			Text text = doc.createTextNode(sb.toString());
 			current.appendChild(text);
 			sb.setLength(0);
 		}
+	}
+
+	@Override
+	public void endElement(String uri, String localName, String qName) throws SAXException {
+		if (doc == null) {
+			return;
+		}
+		flushText();
 		current = current.getParentNode();
 		if (current == doc) {
 			try {
@@ -92,6 +101,7 @@ public abstract class DOMBuilderHandler extends DefaultHandler {
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 		if (doc != null) {
+			flushText();
 			current = createElement(current, qName, attributes);
 			return;
 		}

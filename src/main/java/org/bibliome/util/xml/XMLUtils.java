@@ -316,8 +316,10 @@ public class XMLUtils {
         try {
 			Source source = new DOMSource(node);
 			Transformer transformer = TransformerFactory.newInstance().newTransformer();
-			if (doctypeSystem != null)
+			if (doctypeSystem != null) {
 				transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, doctypeSystem);
+			}
+			transformer.setOutputProperty(OutputKeys.INDENT, "true");
 			transformer.transform(source, result);
 		}
 		catch (TransformerFactoryConfigurationError|TransformerException e) {
