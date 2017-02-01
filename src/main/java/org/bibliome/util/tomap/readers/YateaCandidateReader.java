@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -130,19 +129,15 @@ public class YateaCandidateReader extends AbstractReader<YateaResult> {
 			}
 			if (tokForms.length != tokPOSs.length) {
 				String msg = "mismatch # tokens: form [" + candForm + "] and pos [" + candPOS + "]";
-				if (tokForms.length > tokPOSs.length) {
-					if (logger != null) {
-						logger.warning(msg);
-					}
+				if (logger != null) {
+					logger.warning(msg);
 				}
-				else {
-					throw new RuntimeException(msg);
-				}
-				String lastPOS = tokPOSs[tokPOSs.length - 1];
-				String[] tokPOSs2 = new String[tokForms.length];
-				System.arraycopy(tokPOSs, 0, tokPOSs2, 0, tokPOSs.length);
-				Arrays.fill(tokPOSs2, tokPOSs.length, tokPOSs2.length, lastPOS);
-				tokPOSs = tokPOSs2;
+				return;
+//				String lastPOS = tokPOSs[tokPOSs.length - 1];
+//				String[] tokPOSs2 = new String[tokForms.length];
+//				System.arraycopy(tokPOSs, 0, tokPOSs2, 0, tokPOSs.length);
+//				Arrays.fill(tokPOSs2, tokPOSs.length, tokPOSs2.length, lastPOS);
+//				tokPOSs = tokPOSs2;
 			}
 			
 			List<Token> candTokens = new ArrayList<Token>(tokForms.length);
