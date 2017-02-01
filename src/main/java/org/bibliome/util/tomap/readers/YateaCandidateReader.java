@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -33,6 +34,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.bibliome.util.Iterators;
 import org.bibliome.util.Pair;
 import org.bibliome.util.defaultmap.DefaultArrayListHashMap;
 import org.bibliome.util.defaultmap.DefaultMap;
@@ -193,24 +195,32 @@ public class YateaCandidateReader extends AbstractReader<YateaResult> {
 		@Override
 		public void endDocument() throws SAXException {
 			super.endDocument();
-			for (Map.Entry<String,Candidate> e : result.candidates.entrySet()) {
+			Iterator<Map.Entry<String,Candidate>> it = result.candidates.entrySet().iterator();
+			for (Map.Entry<String,Candidate> e : Iterators.loop(it)) {
 				String id = e.getKey();
 				Candidate candidate = e.getValue();
-				if (tokenHeads.containsKey(id)) {
-					String tokenHeadId = tokenHeads.get(id);
-					Candidate tokenHead = getCandidate(tokenHeadId);
-					candidate.setHeadToken(tokenHead.getTokens().get(0));
-				}
-				if (heads.containsKey(id)) {
-					String headId = heads.get(id);
-					Candidate head = getCandidate(headId);
-					candidate.setHead(head);
-				}
-				if (modifiers.containsKey(id)) {
-					for (String modId : modifiers.get(id)) {
-						Candidate mod = getCandidate(modId);
-						candidate.addModifier(mod);
+				try {
+					if (tokenHeads.containsKey(id)) {
+						String tokenHeadId = tokenHeads.get(id);
+						Candidate tokenHead = getCandidate(tokenHeadId);
+						candidate.setHeadToken(tokenHead.getTokens().get(0));
 					}
+					if (heads.containsKey(id)) {
+						String headId = heads.get(id);
+						Candidate head = getCandidate(headId);
+						candidate.setHead(head);
+					}
+					if (modifiers.containsKey(id)) {
+						for (String modId : modifiers.get(id)) {
+							Candidate mod = getCandidate(modId);
+							candidate.addModifier(mod);
+						}
+					}
+				}
+				catch (RuntimeException err) {
+					YateaCandidateReader.this.logger.warning(err.getMessage());
+					YateaCandidateReader.this.logger.warning("removing candidate " + candidate);
+					it.remove();
 				}
 			}
 		}

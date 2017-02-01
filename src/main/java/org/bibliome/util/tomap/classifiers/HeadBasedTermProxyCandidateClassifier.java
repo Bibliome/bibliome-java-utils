@@ -60,7 +60,7 @@ public class HeadBasedTermProxyCandidateClassifier extends TermProxyCandidateCla
 	public Collection<Candidate> getSignificantParts(Candidate candidate, boolean headPriority) {
 		Collection<Candidate> result = new ArrayList<Candidate>(2);
 		getSignificantParts(candidate, headPriority, result);
-		System.err.println(candidate + " -> " + result);
+//		System.err.println(candidate + " -> " + result);
 		return result;
 	}
 
