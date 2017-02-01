@@ -47,7 +47,7 @@ import org.bibliome.util.taxonomy.saturate.Saturate;
  */
 public class BuildDictionary extends CLIOParser {
 	private File nodesFile;
-	private int size = 1793891;
+	private int size = 2000000;
 	private final Collection<File> namesFiles = new ArrayList<File>();
 	private File saturationFile;
 	private File rejectionFile;
