@@ -165,7 +165,7 @@ public class ProductPatternSpecificationBuilder implements JobSpecificationBuild
 			return result;
 		}
 		
-		private static List<String> getValues(Reader r) throws IOException {
+		static List<String> getValues(Reader r) throws IOException {
 			List<String> result = new ArrayList<String>();
 			BufferedReader br = new BufferedReader(r);
 			while (true) {
