@@ -603,7 +603,7 @@ public class AnnotationSet {
 		}
 
 		@SuppressWarnings("static-method")
-		private boolean hasSameProperties(@SuppressWarnings("unused") AlvisAEAnnotation annot1, @SuppressWarnings("unused") AlvisAEAnnotation annot2) {
+		private boolean hasSameProperties(AlvisAEAnnotation annot1, AlvisAEAnnotation annot2) {
 			return true;
 //			Collection<String> keys1 = annot1.getPropertyKeys();
 //			Collection<String> keys2 = annot2.getPropertyKeys();

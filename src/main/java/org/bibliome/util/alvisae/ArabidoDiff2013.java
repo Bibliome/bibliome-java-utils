@@ -809,7 +809,7 @@ public class ArabidoDiff2013 {
 		System.out.println("</tr>");
 	}
 
-	private static void reportMissingGroup(Group gA, @SuppressWarnings("unused") AnnotationSet asetB, boolean left) {
+	private static void reportMissingGroup(Group gA, AnnotationSet asetB, boolean left) {
 		System.out.println("<tr>");
 		if (left)
 			cell(gA);
