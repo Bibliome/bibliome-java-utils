@@ -22,8 +22,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.bibliome.util.files.AbstractFile;
@@ -62,8 +64,11 @@ public class DirectorySourceStream extends AbstractMultipleSourceStream {
 	private void collectFiles(Collection<File> collection, boolean children, File... files) {
 		for (File file : files) {
 			if (file.isDirectory()) {
-				if (children)
-					collectFiles(collection, recursive, file.listFiles(filter));
+				if (children) {
+					File[] childrenFiles = file.listFiles(filter);
+					Arrays.sort(childrenFiles);
+					collectFiles(collection, recursive, childrenFiles);
+				}
 			}
 			else if (file.isFile()) {
 				collection.add(file);
@@ -73,7 +78,7 @@ public class DirectorySourceStream extends AbstractMultipleSourceStream {
 	
 	@Override
 	public Iterator<InputStream> getInputStreams() throws IOException {
-		Collection<File> files = new ArrayList<File>();
+		List<File> files = new ArrayList<File>();
 		collectFiles(files, true, dir);
 		Iterator<File> filesIt = files.iterator();
 		return Mappers.apply(fileToInputStream, filesIt);

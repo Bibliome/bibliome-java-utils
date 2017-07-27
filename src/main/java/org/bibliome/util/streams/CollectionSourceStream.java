@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.bibliome.util.Iterators;
@@ -30,7 +31,7 @@ import org.bibliome.util.mappers.Mapper;
 import org.bibliome.util.mappers.Mappers;
 
 public class CollectionSourceStream extends AbstractMultipleSourceStream {
-	private final Collection<SourceStream> collection;
+	private final List<SourceStream> collection;
 
 	public CollectionSourceStream(String charset, Collection<SourceStream> collection) {
 		super(charset);
