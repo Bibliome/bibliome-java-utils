@@ -2,6 +2,7 @@ package org.bibliome.util.pubmed;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.xpath.XPathExpressionException;
@@ -18,12 +19,14 @@ import org.xml.sax.Attributes;
 public class PubMedIndexDOMBuilderHandler extends DOMBuilderHandler {
 	public static final String TAG_CITATION = "MedlineCitation";
 	public static final String TAG_DELETE = "DeleteCitation";
-	
+
+	private final Logger logger;
 	private final IndexWriter indexWriter;
 	private final Map<String,String> meshPaths;
 	
-	public PubMedIndexDOMBuilderHandler(DocumentBuilder docBuilder, IndexWriter indexWriter, Map<String,String> meshPaths) {
+	public PubMedIndexDOMBuilderHandler(Logger logger, DocumentBuilder docBuilder, IndexWriter indexWriter, Map<String,String> meshPaths) {
 		super(docBuilder);
+		this.logger = logger;
 		this.indexWriter = indexWriter;
 		this.meshPaths = meshPaths;
 	}
@@ -55,17 +58,19 @@ public class PubMedIndexDOMBuilderHandler extends DOMBuilderHandler {
 	private void deleteCitations(Element root) throws CorruptIndexException, IOException {
 		for (Element e : XMLUtils.childrenElements(root)) {
 			String pmid = e.getTextContent();
+			logger.info("  deleting PMID: " + pmid);
 			Term term = new Term(PubMedIndexField.PMID.fieldName, pmid);
 			indexWriter.deleteDocuments(term);
 		}
 	}
 
 	private void updateCitation(Document doc) throws XPathExpressionException, CorruptIndexException, IOException {
+		String pmid = XMLUtils.evaluateString(PubMedIndexField.PMID.xPath, doc);
+		logger.fine("  updating PMID: " + pmid);
 		org.apache.lucene.document.Document luceneDoc = new org.apache.lucene.document.Document();
 		for (PubMedIndexField field : PubMedIndexField.values()) {
 			field.addFields(luceneDoc, doc, meshPaths);
 		}
-		String pmid = XMLUtils.evaluateString(PubMedIndexField.PMID.xPath, doc);
 		Term term = new Term(PubMedIndexField.PMID.fieldName, pmid);
 		indexWriter.updateDocument(term, luceneDoc);
 	}
