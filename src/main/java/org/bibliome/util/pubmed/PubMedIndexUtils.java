@@ -19,7 +19,7 @@ public enum PubMedIndexUtils {
 
 	public static final String ATTRIBUTE_MESH_ID = "UI";
 	public static final Version LUCENE_VERSION = Version.LUCENE_36;
-
+	
 	public static Analyzer getGlobalAnalyzer() {
 		Map<String,Analyzer> fieldAnalyzers = new HashMap<String,Analyzer>();
 		for (PubMedIndexField f : PubMedIndexField.values()) {
@@ -30,7 +30,9 @@ public enum PubMedIndexUtils {
 
 	public static IndexWriterConfig getIndexWriterConfig() {
 		Analyzer analyzer = getGlobalAnalyzer();
-		return new IndexWriterConfig(LUCENE_VERSION, analyzer);
+		IndexWriterConfig result = new IndexWriterConfig(LUCENE_VERSION, analyzer);
+		result.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
+		return result;
 	}
 	
 	public static IndexWriter openIndexWriter(File indexPath) throws IOException {
