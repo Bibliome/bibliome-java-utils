@@ -36,7 +36,7 @@ public enum PubMedIndexField {
 		@Override
 		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, Map<String,String> meshPaths) throws XPathExpressionException {
 			for (Element mesh : XMLUtils.evaluateElements(xPath, doc)) {
-				String meshId = mesh.getAttribute(PubMedIndexUtils.ATTRIBUTE_MESH_ID);
+				String meshId = mesh.getAttribute(ATTRIBUTE_MESH_ID);
 				addField(luceneDoc, fieldName, meshId);
 			}
 		}
@@ -51,7 +51,7 @@ public enum PubMedIndexField {
 		@Override
 		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, Map<String,String> meshPaths) throws XPathExpressionException {
 			for (Element mesh : XMLUtils.evaluateElements(xPath, doc)) {
-				String meshId = mesh.getAttribute(PubMedIndexUtils.ATTRIBUTE_MESH_ID);
+				String meshId = mesh.getAttribute(ATTRIBUTE_MESH_ID);
 				if (meshPaths.containsKey(meshId)) {
 					String meshPath = meshPaths.get(meshId);
 					addField(luceneDoc, fieldName, meshPath);
@@ -150,6 +150,8 @@ public enum PubMedIndexField {
 			return new KeywordAnalyzer();
 		}
 	};
+
+	private static final String ATTRIBUTE_MESH_ID = "UI";
 
 	public final String fieldName;
 	protected final XPathExpression xPath;

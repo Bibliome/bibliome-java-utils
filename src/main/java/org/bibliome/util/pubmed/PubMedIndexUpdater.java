@@ -17,8 +17,14 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.KeywordAnalyzer;
+import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
 import org.bibliome.util.Iterators;
 import org.bibliome.util.clio.CLIOException;
 import org.bibliome.util.clio.CLIOParser;
@@ -87,7 +93,7 @@ public class PubMedIndexUpdater extends CLIOParser {
 	}
 
 	public void update() throws CorruptIndexException, IOException, ParserConfigurationException, SAXException {
-		try (IndexWriter indexWriter = PubMedIndexUtils.openIndexWriter(indexDir)) {
+		try (IndexWriter indexWriter = openIndexWriter(indexDir)) {
 			SAXParser parser = createParser();
 			DefaultHandler handler = new PubMedIndexDOMBuilderHandler(logger, XMLUtils.docBuilder, indexWriter, meshPaths);
 			PubmedIndexProperties properties = new PubmedIndexProperties(indexWriter);
@@ -130,6 +136,27 @@ public class PubMedIndexUpdater extends CLIOParser {
 	private static SAXParser createParser() throws ParserConfigurationException, SAXException {
 		SAXParserFactory pf = SAXParserFactory.newInstance();
 		return pf.newSAXParser();
+	}
+
+	private static Analyzer getGlobalAnalyzer() {
+		Map<String,Analyzer> fieldAnalyzers = new HashMap<String,Analyzer>();
+		for (PubMedIndexField f : PubMedIndexField.values()) {
+			fieldAnalyzers.put(f.fieldName, f.getAnalyzer());
+		}
+		return new PerFieldAnalyzerWrapper(new KeywordAnalyzer(), fieldAnalyzers);
+	}
+
+	private static IndexWriterConfig getIndexWriterConfig() {
+		Analyzer analyzer = getGlobalAnalyzer();
+		IndexWriterConfig result = new IndexWriterConfig(PubMedIndexUtils.LUCENE_VERSION, analyzer);
+		result.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
+		return result;
+	}
+	
+	private static IndexWriter openIndexWriter(File indexPath) throws IOException {
+		Directory dir = FSDirectory.open(indexPath);
+		IndexWriterConfig config = getIndexWriterConfig();
+		return new IndexWriter(dir, config);
 	}
 	
 	public static void main(String[] args) throws CLIOException, CorruptIndexException, IOException, ParserConfigurationException, SAXException {
