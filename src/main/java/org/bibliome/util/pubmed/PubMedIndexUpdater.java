@@ -18,8 +18,6 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.KeywordAnalyzer;
-import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -138,16 +136,8 @@ public class PubMedIndexUpdater extends CLIOParser {
 		return pf.newSAXParser();
 	}
 
-	private static Analyzer getGlobalAnalyzer() {
-		Map<String,Analyzer> fieldAnalyzers = new HashMap<String,Analyzer>();
-		for (PubMedIndexField f : PubMedIndexField.values()) {
-			fieldAnalyzers.put(f.fieldName, f.getAnalyzer());
-		}
-		return new PerFieldAnalyzerWrapper(new KeywordAnalyzer(), fieldAnalyzers);
-	}
-
 	private static IndexWriterConfig getIndexWriterConfig() {
-		Analyzer analyzer = getGlobalAnalyzer();
+		Analyzer analyzer = PubMedIndexUtils.getGlobalAnalyzer();
 		IndexWriterConfig result = new IndexWriterConfig(PubMedIndexUtils.LUCENE_VERSION, analyzer);
 		result.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
 		return result;
