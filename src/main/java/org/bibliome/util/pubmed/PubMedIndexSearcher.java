@@ -39,7 +39,7 @@ public class PubMedIndexSearcher extends CLIOParser {
 	@Override
 	protected boolean processArgument(String arg) throws CLIOException {
 		queryString = arg;
-		return true;
+		return false;
 	}
 
 	@Override
@@ -77,12 +77,14 @@ public class PubMedIndexSearcher extends CLIOParser {
 		Analyzer analyzer = PubMedIndexUtils.getGlobalAnalyzer();
 		QueryParser parser = new QueryParser(PubMedIndexUtils.LUCENE_VERSION, PubMedIndexField.ABSTRACT.fieldName, analyzer);
 		parser.setDefaultOperator(QueryParser.AND_OPERATOR);
+		System.err.println("parsing query: " + queryString);
 		Query query = parser.parse(queryString);
 		
 		Directory dir = FSDirectory.open(indexDir);
 		try (IndexReader indexReader = IndexReader.open(dir)) {
 			try (IndexSearcher indexSearcher = new IndexSearcher(indexReader)) {
 				TopDocs topDocs = indexSearcher.search(query, Integer.MAX_VALUE);
+				System.err.format("found %d hits\n", topDocs.totalHits);
 				output(indexReader, topDocs);
 			}
 		}
