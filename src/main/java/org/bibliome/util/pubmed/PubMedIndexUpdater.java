@@ -31,14 +31,13 @@ import org.bibliome.util.streams.SourceStream;
 import org.bibliome.util.streams.StreamFactory;
 import org.bibliome.util.xml.XMLUtils;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 public class PubMedIndexUpdater extends CLIOParser {
 	private final StreamFactory streamFactory = new StreamFactory();
 	private File indexDir;
 	private final Collection<SourceStream> sources = new ArrayList<SourceStream>();
 	private final Map<String,String> meshPaths = new HashMap<String,String>();
-	private Pattern filenamePattern = Pattern.compile("medline\\d+\\.xml");
+	private Pattern filenamePattern = Pattern.compile("medline\\d+n\\d+\\.xml");
 
 	public PubMedIndexUpdater() {
 		super();
@@ -90,7 +89,7 @@ public class PubMedIndexUpdater extends CLIOParser {
 	public void update() throws CorruptIndexException, IOException, ParserConfigurationException, SAXException {
 		try (IndexWriter indexWriter = openIndexWriter(indexDir)) {
 			SAXParser parser = createParser();
-			DefaultHandler handler = new PubMedIndexDOMBuilderHandler(XMLUtils.docBuilder, indexWriter, meshPaths);
+			PubMedIndexDOMBuilderHandler handler = new PubMedIndexDOMBuilderHandler(XMLUtils.docBuilder, indexWriter, meshPaths);
 			PubmedIndexProperties properties = new PubmedIndexProperties(indexWriter);
 			SourceStream source = new CollectionSourceStream("UTF-8", sources);
 			for (InputStream is : Iterators.loop(source.getInputStreams())) {
@@ -98,8 +97,10 @@ public class PubMedIndexUpdater extends CLIOParser {
 				String filename = getFilename(streamName);
 				if (shouldParse(properties, filename)) {
 					System.err.println("parsing and indexing: " + filename);
+					handler.resetCounts();
 					parser.parse(is, handler);
 					properties.addIndexedFile(filename);
+					System.err.format("  citations updated: %d, deleted: %d\n", handler.getUpdatedCitationsCount(), handler.getDeletedCitationsCount());
 				}
 				else {
 					System.err.println("skipping: " + filename);
@@ -151,11 +152,11 @@ public class PubMedIndexUpdater extends CLIOParser {
 		if (inst.parse(args)) {
 			return;
 		}
-		if (inst.sources.isEmpty()) {
-			throw new CLIOException("missing source files location");
-		}
 		if (inst.indexDir == null) {
 			throw new CLIOException("missing index location");
+		}
+		if (inst.sources.isEmpty()) {
+			throw new CLIOException("missing source files location");
 		}
 		inst.update();
 	}
