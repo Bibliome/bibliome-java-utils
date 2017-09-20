@@ -23,7 +23,7 @@ import org.w3c.dom.Element;
 public enum PubMedIndexField {
 	PMID("pmid", "/MedlineCitation/PMID") {
 		@Override
-		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, Map<String,String> meshPaths) throws XPathExpressionException {
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException {
 			String pmid = XMLUtils.evaluateString(xPath, doc);
 			addField(luceneDoc, fieldName, pmid);
 		}
@@ -36,7 +36,7 @@ public enum PubMedIndexField {
 	
 	MESH_ID("mesh-id", "/MedlineCitation/MeshHeadingList/MeshHeading/DescriptorName") {
 		@Override
-		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, Map<String,String> meshPaths) throws XPathExpressionException {
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException {
 			for (Element mesh : XMLUtils.evaluateElements(xPath, doc)) {
 				String meshId = mesh.getAttribute(ATTRIBUTE_MESH_ID);
 				addField(luceneDoc, fieldName, meshId);
@@ -51,7 +51,7 @@ public enum PubMedIndexField {
 	
 	MESH_PATH("mesh-path", "/MedlineCitation/MeshHeadingList/MeshHeading/DescriptorName") {
 		@Override
-		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, Map<String,String> meshPaths) throws XPathExpressionException {
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException {
 			for (Element mesh : XMLUtils.evaluateElements(xPath, doc)) {
 				String meshId = mesh.getAttribute(ATTRIBUTE_MESH_ID);
 				if (meshPaths.containsKey(meshId)) {
@@ -69,7 +69,7 @@ public enum PubMedIndexField {
 
 	TITLE("title", "/MedlineCitation/Article/ArticleTitle") {
 		@Override
-		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, Map<String,String> meshPaths) throws XPathExpressionException {
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException {
 			String title = XMLUtils.evaluateString(xPath, doc);
 			addField(luceneDoc, fieldName, title);
 		}
@@ -82,7 +82,7 @@ public enum PubMedIndexField {
 
 	ABSTRACT("abstract", "/MedlineCitation/Article/Abstract/AbstractText") {
 		@Override
-		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, Map<String,String> meshPaths) throws XPathExpressionException, DOMException {
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException, DOMException {
 			for (Element abs : XMLUtils.evaluateElements(xPath, doc)) {
 				String absText = abs.getTextContent();
 				addField(luceneDoc, fieldName, absText);
@@ -97,7 +97,7 @@ public enum PubMedIndexField {
 
 	YEAR("year", "/MedlineCitation/Article/Journal/JournalIssue/PubDate/*[name() = 'Year' or name() = 'MedlineDate']") {
 		@Override
-		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, Map<String,String> meshPaths) throws XPathExpressionException {
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException {
 			String date = XMLUtils.evaluateString(xPath, doc);
 			String year = extractYear(date);
 			NumericField yearField = new NumericField(fieldName, Field.Store.NO, true);
@@ -121,7 +121,7 @@ public enum PubMedIndexField {
 
 	JOURNAL("journal", "/MedlineCitation/Article/Journal/Title") {
 		@Override
-		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, Map<String,String> meshPaths) throws XPathExpressionException {
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException {
 			String journal = XMLUtils.evaluateString(xPath, doc);
 			addField(luceneDoc, fieldName, journal);
 		}
@@ -134,7 +134,7 @@ public enum PubMedIndexField {
 	
 	AUTHOR("author", "/MedlineCitation/Article/AuthorList/Author/*[name() = 'ForeName' or name() = 'LastName']") {
 		@Override
-		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, Map<String,String> meshPaths) throws XPathExpressionException, DOMException {
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException, DOMException {
 			for (Element author : XMLUtils.evaluateElements(xPath, doc)) {
 				String authorName = author.getTextContent();
 				addField(luceneDoc, fieldName, authorName);
@@ -147,9 +147,21 @@ public enum PubMedIndexField {
 		}
 	},
 	
+	SOURCE("source") {
+		@Override
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException {
+			addField(luceneDoc, fieldName, source);
+		}
+
+		@Override
+		protected Analyzer getAnalyzer() {
+			return new KeywordAnalyzer();
+		}
+	},
+	
 	XML("xml") {
 		@Override
-		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, Map<String,String> meshPaths) {
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) {
 			StringWriter sw = new StringWriter();
 			XMLUtils.writeDOMToFile(doc, null, sw);
 			String xml = sw.toString();
@@ -183,7 +195,7 @@ public enum PubMedIndexField {
 		this.xPath = null;
 	}
 
-	protected abstract void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, Map<String,String> meshPaths) throws XPathExpressionException;
+	protected abstract void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException;
 	
 	protected abstract Analyzer getAnalyzer();
 

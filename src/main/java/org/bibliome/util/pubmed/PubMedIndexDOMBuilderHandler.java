@@ -21,6 +21,7 @@ public class PubMedIndexDOMBuilderHandler extends DOMBuilderHandler {
 
 	private final IndexWriter indexWriter;
 	private final Map<String,String> meshPaths;
+	private String source = "";
 	private int updatedCitationsCount = 0;
 	private int deletedCitationsCount = 0;
 	
@@ -28,6 +29,10 @@ public class PubMedIndexDOMBuilderHandler extends DOMBuilderHandler {
 		super(docBuilder);
 		this.indexWriter = indexWriter;
 		this.meshPaths = meshPaths;
+	}
+
+	public void setSource(String source) {
+		this.source = source;
 	}
 
 	public int getUpdatedCitationsCount() {
@@ -81,7 +86,7 @@ public class PubMedIndexDOMBuilderHandler extends DOMBuilderHandler {
 		String pmid = XMLUtils.evaluateString(PubMedIndexField.PMID.xPath, doc);
 		org.apache.lucene.document.Document luceneDoc = new org.apache.lucene.document.Document();
 		for (PubMedIndexField field : PubMedIndexField.values()) {
-			field.addFields(luceneDoc, doc, meshPaths);
+			field.addFields(luceneDoc, doc, source, meshPaths);
 		}
 		Term term = new Term(PubMedIndexField.PMID.fieldName, pmid);
 		indexWriter.updateDocument(term, luceneDoc);

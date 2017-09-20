@@ -98,6 +98,7 @@ public class PubMedIndexUpdater extends CLIOParser {
 				if (shouldParse(properties, filename)) {
 					System.err.println("parsing and indexing: " + filename);
 					handler.resetCounts();
+					handler.setSource(filename);
 					parser.parse(is, handler);
 					properties.addIndexedFile(filename);
 					System.err.format("  citations updated: %d, deleted: %d\n", handler.getUpdatedCitationsCount(), handler.getDeletedCitationsCount());
