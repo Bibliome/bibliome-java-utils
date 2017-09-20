@@ -121,7 +121,7 @@ public enum PubMedIndexField {
 		}
 	},
 	
-	AUTHOR("author", "/MedlineCitation/Article/AuthorList/Author/(ForeName|LastName)") {
+	AUTHOR("author", "/MedlineCitation/Article/AuthorList/Author/ForeName|LastName") {
 		@Override
 		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, Map<String,String> meshPaths) throws XPathExpressionException, DOMException {
 			for (Element author : XMLUtils.evaluateElements(xPath, doc)) {
