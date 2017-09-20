@@ -25,8 +25,8 @@ import org.bibliome.util.streams.FileTargetStream;
 import org.bibliome.util.streams.TargetStream;
 
 public class PubMedIndexSearcher extends CLIOParser {
-	private static final String XML_HEADER = null;
-	private static final String XML_FOOTER = null;
+	private static final String XML_HEADER = "<PubmedArticleSet>";
+	private static final String XML_FOOTER = "</PubmedArticleSet>";
 	private static final CharSequence BATCH_NUMBER_PLACEHOLDER = "%%";
 
 	private String queryString;

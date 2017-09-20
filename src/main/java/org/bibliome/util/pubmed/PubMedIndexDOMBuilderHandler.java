@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
+import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.lucene.index.CorruptIndexException;
@@ -16,7 +17,7 @@ import org.w3c.dom.Element;
 import org.xml.sax.Attributes;
 
 public class PubMedIndexDOMBuilderHandler extends DOMBuilderHandler {
-	public static final String TAG_CITATION = "MedlineCitation";
+	public static final String TAG_CITATION = "PubmedArticle";
 	public static final String TAG_DELETE = "DeleteCitation";
 
 	private final IndexWriter indexWriter;
@@ -81,7 +82,7 @@ public class PubMedIndexDOMBuilderHandler extends DOMBuilderHandler {
 		}
 	}
 
-	private void updateCitation(Document doc) throws XPathExpressionException, CorruptIndexException, IOException {
+	private void updateCitation(Document doc) throws XPathExpressionException, CorruptIndexException, IOException, TransformerException {
 		updatedCitationsCount++;
 		String pmid = XMLUtils.evaluateString(PubMedIndexField.PMID.xPath, doc);
 		org.apache.lucene.document.Document luceneDoc = new org.apache.lucene.document.Document();
