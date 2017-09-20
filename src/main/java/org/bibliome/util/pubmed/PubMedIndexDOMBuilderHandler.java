@@ -21,11 +21,26 @@ public class PubMedIndexDOMBuilderHandler extends DOMBuilderHandler {
 
 	private final IndexWriter indexWriter;
 	private final Map<String,String> meshPaths;
+	private int updatedCitationsCount = 0;
+	private int deletedCitationsCount = 0;
 	
 	public PubMedIndexDOMBuilderHandler(DocumentBuilder docBuilder, IndexWriter indexWriter, Map<String,String> meshPaths) {
 		super(docBuilder);
 		this.indexWriter = indexWriter;
 		this.meshPaths = meshPaths;
+	}
+
+	public int getUpdatedCitationsCount() {
+		return updatedCitationsCount;
+	}
+	
+	public int getDeletedCitationsCount() {
+		return deletedCitationsCount;
+	}
+
+	public void resetCounts() {
+		updatedCitationsCount = 0;
+		deletedCitationsCount = 0;
 	}
 
 	@Override
@@ -55,15 +70,15 @@ public class PubMedIndexDOMBuilderHandler extends DOMBuilderHandler {
 	private void deleteCitations(Element root) throws CorruptIndexException, IOException {
 		for (Element e : XMLUtils.childrenElements(root)) {
 			String pmid = e.getTextContent();
-			System.err.println("  deleting PMID: " + pmid);
+			deletedCitationsCount++;
 			Term term = new Term(PubMedIndexField.PMID.fieldName, pmid);
 			indexWriter.deleteDocuments(term);
 		}
 	}
 
 	private void updateCitation(Document doc) throws XPathExpressionException, CorruptIndexException, IOException {
+		updatedCitationsCount++;
 		String pmid = XMLUtils.evaluateString(PubMedIndexField.PMID.xPath, doc);
-//		System.err.println("  updating PMID: " + pmid);
 		org.apache.lucene.document.Document luceneDoc = new org.apache.lucene.document.Document();
 		for (PubMedIndexField field : PubMedIndexField.values()) {
 			field.addFields(luceneDoc, doc, meshPaths);
