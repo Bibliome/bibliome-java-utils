@@ -1,6 +1,5 @@
 package org.bibliome.util.pubmed;
 
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Collections;
 import java.util.Map;
@@ -25,7 +24,7 @@ public enum PubMedIndexField {
 		@Override
 		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException {
 			String pmid = XMLUtils.evaluateString(xPath, doc);
-			addField(luceneDoc, fieldName, pmid);
+			addIndexedDataField(luceneDoc, fieldName, pmid);
 		}
 
 		@Override
@@ -39,7 +38,7 @@ public enum PubMedIndexField {
 		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException {
 			for (Element mesh : XMLUtils.evaluateElements(xPath, doc)) {
 				String meshId = mesh.getAttribute(ATTRIBUTE_MESH_ID);
-				addField(luceneDoc, fieldName, meshId);
+				addIndexedField(luceneDoc, fieldName, meshId);
 			}
 		}
 
@@ -56,7 +55,7 @@ public enum PubMedIndexField {
 				String meshId = mesh.getAttribute(ATTRIBUTE_MESH_ID);
 				if (meshPaths.containsKey(meshId)) {
 					String meshPath = meshPaths.get(meshId);
-					addField(luceneDoc, fieldName, meshPath);
+					addIndexedField(luceneDoc, fieldName, meshPath);
 				}
 			}
 		}
@@ -71,7 +70,7 @@ public enum PubMedIndexField {
 		@Override
 		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException {
 			String title = XMLUtils.evaluateString(xPath, doc);
-			addField(luceneDoc, fieldName, title);
+			addIndexedField(luceneDoc, fieldName, title);
 		}
 
 		@Override
@@ -85,7 +84,7 @@ public enum PubMedIndexField {
 		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException, DOMException {
 			for (Element abs : XMLUtils.evaluateElements(xPath, doc)) {
 				String absText = abs.getTextContent();
-				addField(luceneDoc, fieldName, absText);
+				addIndexedField(luceneDoc, fieldName, absText);
 			}
 		}
 
@@ -123,7 +122,7 @@ public enum PubMedIndexField {
 		@Override
 		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException {
 			String journal = XMLUtils.evaluateString(xPath, doc);
-			addField(luceneDoc, fieldName, journal);
+			addIndexedField(luceneDoc, fieldName, journal);
 		}
 
 		@Override
@@ -137,7 +136,7 @@ public enum PubMedIndexField {
 		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException, DOMException {
 			for (Element author : XMLUtils.evaluateElements(xPath, doc)) {
 				String authorName = author.getTextContent();
-				addField(luceneDoc, fieldName, authorName);
+				addIndexedField(luceneDoc, fieldName, authorName);
 			}
 		}
 
@@ -150,7 +149,7 @@ public enum PubMedIndexField {
 	SOURCE("source") {
 		@Override
 		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException {
-			addField(luceneDoc, fieldName, source);
+			addDataField(luceneDoc, fieldName, source);
 		}
 
 		@Override
@@ -165,7 +164,7 @@ public enum PubMedIndexField {
 			StringWriter sw = new StringWriter();
 			XMLUtils.writeDOMToFile(doc, null, sw);
 			String xml = sw.toString();
-			addField(luceneDoc, fieldName, xml);
+			addDataField(luceneDoc, fieldName, xml);
 		}
 
 		@Override
@@ -199,8 +198,18 @@ public enum PubMedIndexField {
 	
 	protected abstract Analyzer getAnalyzer();
 
-	private static void addField(org.apache.lucene.document.Document result, String fieldName, String fieldValue) {
-		Field field = new Field(fieldName, new StringReader(fieldValue));
+	private static void addDataField(org.apache.lucene.document.Document result, String fieldName, String fieldValue) {
+		Field field = new Field(fieldName, fieldValue, Field.Store.YES, Field.Index.NO, Field.TermVector.NO);
+		result.add(field);
+	}
+
+	private static void addIndexedField(org.apache.lucene.document.Document result, String fieldName, String fieldValue) {
+		Field field = new Field(fieldName, fieldValue, Field.Store.NO, Field.Index.ANALYZED, Field.TermVector.NO);
+		result.add(field);
+	}
+
+	private static void addIndexedDataField(org.apache.lucene.document.Document result, String fieldName, String fieldValue) {
+		Field field = new Field(fieldName, fieldValue, Field.Store.YES, Field.Index.ANALYZED, Field.TermVector.NO);
 		result.add(field);
 	}
 }
