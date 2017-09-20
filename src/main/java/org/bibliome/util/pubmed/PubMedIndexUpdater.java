@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,11 +39,9 @@ public class PubMedIndexUpdater extends CLIOParser {
 	private final Collection<SourceStream> sources = new ArrayList<SourceStream>();
 	private final Map<String,String> meshPaths = new HashMap<String,String>();
 	private Pattern filenamePattern = Pattern.compile("medline\\d+\\.xml");
-	private final Logger logger;
 
-	public PubMedIndexUpdater(Logger logger) {
+	public PubMedIndexUpdater() {
 		super();
-		this.logger = logger;
 	}
 
 	@CLIOption("-dir")
@@ -93,23 +90,23 @@ public class PubMedIndexUpdater extends CLIOParser {
 	public void update() throws CorruptIndexException, IOException, ParserConfigurationException, SAXException {
 		try (IndexWriter indexWriter = openIndexWriter(indexDir)) {
 			SAXParser parser = createParser();
-			DefaultHandler handler = new PubMedIndexDOMBuilderHandler(logger, XMLUtils.docBuilder, indexWriter, meshPaths);
+			DefaultHandler handler = new PubMedIndexDOMBuilderHandler(XMLUtils.docBuilder, indexWriter, meshPaths);
 			PubmedIndexProperties properties = new PubmedIndexProperties(indexWriter);
 			SourceStream source = new CollectionSourceStream("UTF-8", sources);
 			for (InputStream is : Iterators.loop(source.getInputStreams())) {
 				String streamName = source.getStreamName(is);
 				String filename = getFilename(streamName);
 				if (shouldParse(properties, filename)) {
-					logger.info("parsing and indexing: " + filename);
+					System.err.println("parsing and indexing: " + filename);
 					parser.parse(is, handler);
 					properties.addIndexedFile(filename);
 				}
 				else {
-					logger.info("skipping: " + filename);
+					System.err.println("skipping: " + filename);
 				}
 				indexWriter.commit();
 			}
-			logger.info("updating index properties");
+			System.err.println("updating index properties");
 			properties.update(indexWriter);
 			indexWriter.commit();
 		}
@@ -150,14 +147,12 @@ public class PubMedIndexUpdater extends CLIOParser {
 	}
 	
 	public static void main(String[] args) throws CLIOException, CorruptIndexException, IOException, ParserConfigurationException, SAXException {
-		Logger logger = Logger.getLogger("pubmed-index-updater");
-		PubMedIndexUpdater inst = new PubMedIndexUpdater(logger);
+		PubMedIndexUpdater inst = new PubMedIndexUpdater();
 		if (inst.parse(args)) {
 			return;
 		}
 		if (inst.sources.isEmpty()) {
-			logger.severe("missing source files location");
-			System.exit(1);
+			throw new CLIOException("missing source files location");
 		}
 		inst.update();
 	}
