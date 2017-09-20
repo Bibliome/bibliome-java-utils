@@ -4,6 +4,8 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Collections;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
@@ -93,13 +95,22 @@ public enum PubMedIndexField {
 		}
 	},
 
-	YEAR("year", "/MedlineCitation/Article/Journal/PubDate/Year") {
+	YEAR("year", "/MedlineCitation/Article/Journal/JournalIssue/PubDate/*[name() = 'Year' or name() = 'MedlineDate']") {
 		@Override
 		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, Map<String,String> meshPaths) throws XPathExpressionException {
-			String year = XMLUtils.evaluateString(xPath, doc);
+			String date = XMLUtils.evaluateString(xPath, doc);
+			String year = extractYear(date);
 			NumericField yearField = new NumericField(fieldName, Field.Store.NO, true);
-			yearField.setIntValue(Integer.parseInt(year));
+			yearField.setIntValue(Integer.parseInt(extractYear(year)));
 			luceneDoc.add(yearField);
+		}
+
+		private String extractYear(String date) {
+			Matcher m = YEAR_PATTERN.matcher(date);
+			if (m.find()) {
+				return m.group();
+			}
+			return null;
 		}
 
 		@Override
@@ -121,7 +132,7 @@ public enum PubMedIndexField {
 		}
 	},
 	
-	AUTHOR("author", "/MedlineCitation/Article/AuthorList/Author/ForeName|LastName") {
+	AUTHOR("author", "/MedlineCitation/Article/AuthorList/Author/*[name() = 'ForeName' or name() = 'LastName']") {
 		@Override
 		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, Map<String,String> meshPaths) throws XPathExpressionException, DOMException {
 			for (Element author : XMLUtils.evaluateElements(xPath, doc)) {
@@ -152,6 +163,7 @@ public enum PubMedIndexField {
 	};
 
 	private static final String ATTRIBUTE_MESH_ID = "UI";
+	private static final Pattern YEAR_PATTERN = Pattern.compile("\\d{4}");
 
 	public final String fieldName;
 	protected final XPathExpression xPath;
