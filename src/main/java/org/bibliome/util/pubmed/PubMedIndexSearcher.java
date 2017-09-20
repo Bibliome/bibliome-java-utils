@@ -18,6 +18,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.bibliome.util.clio.CLIOException;
 import org.bibliome.util.clio.CLIOParser;
+import org.bibliome.util.clio.CLIOption;
 import org.bibliome.util.files.OutputDirectory;
 import org.bibliome.util.files.OutputFile;
 import org.bibliome.util.streams.FileTargetStream;
@@ -31,9 +32,9 @@ public class PubMedIndexSearcher extends CLIOParser {
 	private String queryString;
 	private File indexDir;
 	private int batchSize = Integer.MAX_VALUE;
-	private String outputBaseFormat;
-	private String pmidOutputFormat;
-	private String xmlOutputFormat;
+	private String outputBaseFormat = ".";
+	private String pmidOutputFormat = null;
+	private String xmlOutputFormat = null;
 
 	@Override
 	protected boolean processArgument(String arg) throws CLIOException {
@@ -46,7 +47,32 @@ public class PubMedIndexSearcher extends CLIOParser {
 		// TODO Auto-generated method stub
 		return null;
 	}
-		
+
+	@CLIOption("-index")
+	public void setIndexDir(File indexDir) {
+		this.indexDir = indexDir;
+	}
+
+	@CLIOption("-batch")
+	public void setBatchSize(int batchSize) {
+		this.batchSize = batchSize;
+	}
+
+	@CLIOption("-outdir")
+	public void setOutputBaseFormat(String outputBaseFormat) {
+		this.outputBaseFormat = outputBaseFormat;
+	}
+
+	@CLIOption("-pmid")
+	public void setPmidOutputFormat(String pmidOutputFormat) {
+		this.pmidOutputFormat = pmidOutputFormat;
+	}
+
+	@CLIOption("-xml")
+	public void setXmlOutputFormat(String xmlOutputFormat) {
+		this.xmlOutputFormat = xmlOutputFormat;
+	}
+
 	private void search() throws ParseException, IOException {
 		Analyzer analyzer = PubMedIndexUtils.getGlobalAnalyzer();
 		QueryParser parser = new QueryParser(PubMedIndexUtils.LUCENE_VERSION, PubMedIndexField.ABSTRACT.fieldName, analyzer);
@@ -122,5 +148,19 @@ public class PubMedIndexSearcher extends CLIOParser {
 		Fieldable field = doc.getFieldable(pubmedField.fieldName);
 		String value = field.stringValue();
 		out.println(value);
+	}
+	
+	public static void main(String[] args) throws CLIOException, ParseException, IOException {
+		PubMedIndexSearcher inst = new PubMedIndexSearcher();
+		if (inst.parse(args)) {
+			return;
+		}
+		if (inst.queryString == null) {
+			throw new CLIOException("missing query");
+		}
+		if (inst.indexDir == null) {
+			throw new CLIOException("missing index location");
+		}
+		inst.search();
 	}
 }
