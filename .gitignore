@@ -7,3 +7,4 @@ target/
 .settings/
 header.txt
 maven-repository
+test/
