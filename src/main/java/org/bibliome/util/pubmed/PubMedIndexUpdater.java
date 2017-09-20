@@ -44,7 +44,7 @@ public class PubMedIndexUpdater extends CLIOParser {
 		super();
 	}
 
-	@CLIOption("-dir")
+	@CLIOption("-index")
 	public void setIndexDir(File indexDir) {
 		this.indexDir = indexDir;
 	}
@@ -153,6 +153,9 @@ public class PubMedIndexUpdater extends CLIOParser {
 		}
 		if (inst.sources.isEmpty()) {
 			throw new CLIOException("missing source files location");
+		}
+		if (inst.indexDir == null) {
+			throw new CLIOException("missing index location");
 		}
 		inst.update();
 	}
