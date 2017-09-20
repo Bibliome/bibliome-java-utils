@@ -3,7 +3,6 @@ package org.bibliome.util.pubmed;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.text.MessageFormat;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
@@ -27,13 +26,14 @@ import org.bibliome.util.streams.TargetStream;
 public class PubMedIndexSearcher extends CLIOParser {
 	private static final String XML_HEADER = null;
 	private static final String XML_FOOTER = null;
+	private static final CharSequence BATCH_NUMBER_PLACEHOLDER = "%%";
 
 	private String queryString;
 	private File indexDir;
 	private int batchSize = Integer.MAX_VALUE;
-	private MessageFormat outputBaseFormat;
-	private MessageFormat pmidOutputFormat;
-	private MessageFormat xmlOutputFormat;
+	private String outputBaseFormat;
+	private String pmidOutputFormat;
+	private String xmlOutputFormat;
 
 	@Override
 	protected boolean processArgument(String arg) throws CLIOException {
@@ -64,16 +64,40 @@ public class PubMedIndexSearcher extends CLIOParser {
 	
 	private void output(IndexReader indexReader, TopDocs topDocs) throws CorruptIndexException, IOException {
 		int nBatches = 1 + (topDocs.totalHits / batchSize);
+		String batchNumberFormat = getBatchNumberFormat(nBatches);
+		String outputBaseFormat = createFormatString(this.outputBaseFormat, batchNumberFormat);
+		String pmidOutputFormat = createFormatString(this.pmidOutputFormat, batchNumberFormat);
+		String xmlOutputFormat = createFormatString(this.xmlOutputFormat, batchNumberFormat);
 		for (int batch = 0; batch < nBatches; ++batch) {
-			outputBatch(indexReader, topDocs, batch);
+			outputBatch(indexReader, topDocs, batch, outputBaseFormat, pmidOutputFormat, xmlOutputFormat);
 		}
 	}
+	
+	private static String createFormatString(String format, String batchNumberFormat) {
+		if (format == null) {
+			return null;
+		}
+		return format.replace(BATCH_NUMBER_PLACEHOLDER, batchNumberFormat);
+	}
+	
+	private static String getBatchNumberFormat(int nBatches) {
+		double nLog = Math.log10(nBatches);
+		int nDigits = (int) Math.ceil(nLog);
+		return String.format("%%0%dd", nDigits);
+	}
 
-	private void outputBatch(IndexReader indexReader, TopDocs topDocs, int batch) throws CorruptIndexException, IOException {
-		String outputBasePath = outputBaseFormat.format(batch);
+	private void outputBatch(IndexReader indexReader, TopDocs topDocs, int batch, String outputBaseFormat, String pmidOutputFormat, String xmlOutputFormat) throws CorruptIndexException, IOException {
+		String outputBasePath = String.format(outputBaseFormat, batch);
 		OutputDirectory outputBaseDir = new OutputDirectory(outputBasePath);
 		int start = batch * batchSize;
 		int end = start + Math.min(start + batchSize, topDocs.totalHits);
+		if (pmidOutputFormat != null) {
+			try (PrintStream out = open(batch, outputBaseDir, pmidOutputFormat)) {
+				for (int d = start; d < end; ++d) {
+					outputBatchDocument(indexReader, topDocs, out, PubMedIndexField.PMID, d);
+				}
+			}
+		}
 		if (xmlOutputFormat != null) {
 			try (PrintStream out = open(batch, outputBaseDir, xmlOutputFormat)) {
 				out.println(XML_HEADER);
@@ -83,17 +107,10 @@ public class PubMedIndexSearcher extends CLIOParser {
 				out.println(XML_FOOTER);
 			}
 		}
-		if (pmidOutputFormat != null) {
-			try (PrintStream out = open(batch, outputBaseDir, pmidOutputFormat)) {
-				for (int d = start; d < end; ++d) {
-					outputBatchDocument(indexReader, topDocs, out, PubMedIndexField.PMID, d);
-				}
-			}
-		}
 	}
 
-	private static PrintStream open(int batch, OutputDirectory outputBaseDir, MessageFormat outputFormat) throws IOException {
-		String outputPath = outputFormat.format(batch);
+	private static PrintStream open(int batch, OutputDirectory outputBaseDir, String outputFormat) throws IOException {
+		String outputPath = String.format(outputFormat, batch);
 		OutputFile outputFile = new OutputFile(outputBaseDir, outputPath);
 		TargetStream target = new FileTargetStream("UTF-8", outputFile);
 		return target.getPrintStream();
