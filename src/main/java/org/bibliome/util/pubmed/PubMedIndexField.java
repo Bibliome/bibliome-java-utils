@@ -33,12 +33,22 @@ public enum PubMedIndexField {
 		@Override
 		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException {
 			String pmid = XMLUtils.evaluateString(xPath, doc);
-			addIndexedDataField(luceneDoc, fieldName, pmid);
+			addField(luceneDoc, pmid);
 		}
 
 		@Override
 		protected Analyzer getAnalyzer() {
 			return new KeywordAnalyzer();
+		}
+
+		@Override
+		public boolean isIndexed() {
+			return true;
+		}
+
+		@Override
+		public boolean isStored() {
+			return true;
 		}
 	},
 	
@@ -47,13 +57,23 @@ public enum PubMedIndexField {
 		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException {
 			for (Element mesh : XMLUtils.evaluateElements(xPath, doc)) {
 				String meshId = mesh.getAttribute(ATTRIBUTE_MESH_ID);
-				addIndexedField(luceneDoc, fieldName, meshId);
+				addField(luceneDoc, meshId);
 			}
 		}
 
 		@Override
 		protected Analyzer getAnalyzer() {
 			return new KeywordAnalyzer();
+		}
+
+		@Override
+		public boolean isIndexed() {
+			return true;
+		}
+
+		@Override
+		public boolean isStored() {
+			return false;
 		}
 	},
 	
@@ -64,7 +84,7 @@ public enum PubMedIndexField {
 				String meshId = mesh.getAttribute(ATTRIBUTE_MESH_ID);
 				if (meshPaths.containsKey(meshId)) {
 					String meshPath = meshPaths.get(meshId);
-					addIndexedField(luceneDoc, fieldName, meshPath);
+					addField(luceneDoc, meshPath);
 				}
 			}
 		}
@@ -73,18 +93,38 @@ public enum PubMedIndexField {
 		protected Analyzer getAnalyzer() {
 			return new KeywordAnalyzer();
 		}
+
+		@Override
+		public boolean isIndexed() {
+			return true;
+		}
+
+		@Override
+		public boolean isStored() {
+			return false;
+		}
 	},
 
 	TITLE("title", "/PubmedArticle/MedlineCitation/Article/ArticleTitle") {
 		@Override
 		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException {
 			String title = XMLUtils.evaluateString(xPath, doc);
-			addIndexedField(luceneDoc, fieldName, title);
+			addField(luceneDoc, title);
 		}
 
 		@Override
 		protected Analyzer getAnalyzer() {
 			return new StandardAnalyzer(PubMedIndexUtils.LUCENE_VERSION);
+		}
+
+		@Override
+		public boolean isIndexed() {
+			return true;
+		}
+
+		@Override
+		public boolean isStored() {
+			return false;
 		}
 	},
 
@@ -93,13 +133,23 @@ public enum PubMedIndexField {
 		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException, DOMException {
 			for (Element abs : XMLUtils.evaluateElements(xPath, doc)) {
 				String absText = abs.getTextContent();
-				addIndexedField(luceneDoc, fieldName, absText);
+				addField(luceneDoc, absText);
 			}
 		}
 
 		@Override
 		protected Analyzer getAnalyzer() {
 			return new StandardAnalyzer(PubMedIndexUtils.LUCENE_VERSION);
+		}
+
+		@Override
+		public boolean isIndexed() {
+			return true;
+		}
+
+		@Override
+		public boolean isStored() {
+			return false;
 		}
 	},
 
@@ -125,18 +175,38 @@ public enum PubMedIndexField {
 		protected Analyzer getAnalyzer() {
 			return new KeywordAnalyzer();
 		}
+
+		@Override
+		public boolean isIndexed() {
+			return true;
+		}
+
+		@Override
+		public boolean isStored() {
+			return false;
+		}
 	},
 
 	JOURNAL("journal", "/PubmedArticle/MedlineCitation/Article/Journal/Title") {
 		@Override
 		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException {
 			String journal = XMLUtils.evaluateString(xPath, doc);
-			addIndexedField(luceneDoc, fieldName, journal);
+			addField(luceneDoc, journal);
 		}
 
 		@Override
 		protected Analyzer getAnalyzer() {
 			return new StandardAnalyzer(PubMedIndexUtils.LUCENE_VERSION);
+		}
+
+		@Override
+		public boolean isIndexed() {
+			return true;
+		}
+
+		@Override
+		public boolean isStored() {
+			return false;
 		}
 	},
 	
@@ -145,7 +215,7 @@ public enum PubMedIndexField {
 		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException, DOMException {
 			for (Element author : XMLUtils.evaluateElements(xPath, doc)) {
 				String authorName = author.getTextContent();
-				addIndexedField(luceneDoc, fieldName, authorName);
+				addField(luceneDoc, authorName);
 			}
 		}
 
@@ -153,17 +223,37 @@ public enum PubMedIndexField {
 		protected Analyzer getAnalyzer() {
 			return new StandardAnalyzer(PubMedIndexUtils.LUCENE_VERSION, Collections.EMPTY_SET);
 		}
+
+		@Override
+		public boolean isIndexed() {
+			return true;
+		}
+
+		@Override
+		public boolean isStored() {
+			return false;
+		}
 	},
 	
 	SOURCE("source") {
 		@Override
 		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException {
-			addDataField(luceneDoc, fieldName, source);
+			addField(luceneDoc, source);
 		}
 
 		@Override
 		protected Analyzer getAnalyzer() {
 			return new KeywordAnalyzer();
+		}
+
+		@Override
+		public boolean isIndexed() {
+			return false;
+		}
+
+		@Override
+		public boolean isStored() {
+			return true;
 		}
 	},
 
@@ -176,12 +266,22 @@ public enum PubMedIndexField {
 			Transformer transformer = getTransformer();
 			transformer.transform(xslSource, xslResult);
 			String xml = sw.toString();
-			addDataField(luceneDoc, fieldName, xml);
+			addField(luceneDoc, xml);
 		}
 
 		@Override
 		protected Analyzer getAnalyzer() {
 			return new KeywordAnalyzer();
+		}
+
+		@Override
+		public boolean isIndexed() {
+			return false;
+		}
+
+		@Override
+		public boolean isStored() {
+			return true;
 		}
 	};
 
@@ -209,20 +309,16 @@ public enum PubMedIndexField {
 	protected abstract void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException, TransformerException;
 	
 	protected abstract Analyzer getAnalyzer();
-
-	private static void addDataField(org.apache.lucene.document.Document result, String fieldName, String fieldValue) {
-		Field field = new Field(fieldName, fieldValue, Field.Store.YES, Field.Index.NO, Field.TermVector.NO);
-		result.add(field);
-	}
-
-	private static void addIndexedField(org.apache.lucene.document.Document result, String fieldName, String fieldValue) {
-		Field field = new Field(fieldName, fieldValue, Field.Store.NO, Field.Index.ANALYZED, Field.TermVector.NO);
-		result.add(field);
-	}
-
-	private static void addIndexedDataField(org.apache.lucene.document.Document result, String fieldName, String fieldValue) {
-		Field field = new Field(fieldName, fieldValue, Field.Store.YES, Field.Index.ANALYZED, Field.TermVector.NO);
-		result.add(field);
+	
+	public abstract boolean isIndexed();
+	
+	public abstract boolean isStored();
+	
+	protected void addField(org.apache.lucene.document.Document doc, String fieldValue) {
+		Field.Store store = isStored() ? Field.Store.YES : Field.Store.NO;
+		Field.Index index = isIndexed() ? Field.Index.ANALYZED : Field.Index.NO;
+		Field field = new Field(fieldName, fieldValue, store, index, Field.TermVector.NO);
+		doc.add(field);
 	}
 	
 	private static Transformer getTransformer() throws TransformerConfigurationException {
