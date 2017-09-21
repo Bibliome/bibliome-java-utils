@@ -38,7 +38,7 @@ public class PubMedIndexUpdater extends CLIOParser {
 	private File indexDir;
 	private final Collection<SourceStream> sources = new ArrayList<SourceStream>();
 	private final Map<String,String> meshPaths = new HashMap<String,String>();
-	private Pattern filenamePattern = Pattern.compile("medline\\d+n\\d+\\.xml(?:\\.gz)");
+	private Pattern filenamePattern = Pattern.compile("medline\\d+n\\d+\\.xml(?:\\.gz)?");
 
 	public PubMedIndexUpdater() {
 		super();
@@ -103,17 +103,17 @@ public class PubMedIndexUpdater extends CLIOParser {
 				String streamName = source.getStreamName(is);
 				String filename = getFilename(streamName);
 				if (shouldParse(properties, filename)) {
-					System.err.println("parsing and indexing: " + filename);
+					System.err.format("parsing and indexing: %s (%s)\n", filename, streamName);
 					handler.resetCounts();
 					handler.setSource(filename);
 					parser.parse(is, handler);
 					properties.addIndexedFile(filename);
+					indexWriter.commit();
 					System.err.format("  citations updated: %d, deleted: %d\n", handler.getUpdatedCitationsCount(), handler.getDeletedCitationsCount());
 				}
 				else {
 					System.err.println("skipping: " + filename);
 				}
-				indexWriter.commit();
 			}
 			System.err.println("updating index properties");
 			properties.update(indexWriter);
@@ -134,7 +134,8 @@ public class PubMedIndexUpdater extends CLIOParser {
 		if (slash == -1) {
 			return streamName;
 		}
-		return streamName.substring(slash + 1);
+		String filename = streamName.substring(slash + 1);
+		return filename.replace(".gz", "");
 	}
 	
 	private static SAXParser createParser() throws ParserConfigurationException, SAXException {
