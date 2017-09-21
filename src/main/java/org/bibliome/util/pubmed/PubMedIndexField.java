@@ -99,7 +99,7 @@ public enum PubMedIndexField {
 		}
 	},
 	
-	MESH_PATH("mesh-path", "/PubmedArticle/MedlineCitation/MeshHeadingList/MeshHeading/DescriptorName") {
+	MESH_TREE("mesh-tree", "/PubmedArticle/MedlineCitation/MeshHeadingList/MeshHeading/DescriptorName") {
 		@Override
 		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException {
 			for (Element mesh : XMLUtils.evaluateElements(xPath, doc)) {
