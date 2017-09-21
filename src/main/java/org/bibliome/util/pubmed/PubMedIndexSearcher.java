@@ -44,8 +44,21 @@ public class PubMedIndexSearcher extends CLIOParser {
 
 	@Override
 	public String getResourceBundleName() {
-		// TODO Auto-generated method stub
-		return null;
+		return PubMedIndexSearcher.class.getCanonicalName() + "Help";
+	}
+	
+	@CLIOption(stop=true, value="-help")
+	public void help() {
+		System.out.println(usage());
+	}
+
+	@CLIOption(stop=true, value="-fields")
+	public static void fields() {
+		for (PubMedIndexField f : PubMedIndexField.values()) {
+			if (f.isIndexed()) {
+				System.out.println(f.fieldName);
+			}
+		}
 	}
 
 	@CLIOption("-index")

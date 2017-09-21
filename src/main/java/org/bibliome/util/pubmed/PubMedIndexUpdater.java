@@ -42,13 +42,18 @@ public class PubMedIndexUpdater extends CLIOParser {
 	public PubMedIndexUpdater() {
 		super();
 	}
+	
+	@CLIOption(stop=true, value="-help")
+	public void help() {
+		System.out.println(usage());
+	}
 
 	@CLIOption("-index")
 	public void setIndexDir(File indexDir) {
 		this.indexDir = indexDir;
 	}
 	
-	@CLIOption("-mesh-roots")
+	@CLIOption("-mesh-paths")
 	public void addMeSHRoots(String meshRoots) throws IOException, URISyntaxException {
 		SourceStream source = streamFactory.getSourceStream(meshRoots);
 		try (BufferedReader r = source.getBufferedReader()) {
@@ -82,8 +87,7 @@ public class PubMedIndexUpdater extends CLIOParser {
 
 	@Override
 	public String getResourceBundleName() {
-		// TODO Auto-generated method stub
-		return null;
+		return PubMedIndexUpdater.class.getCanonicalName() + "Help";
 	}
 
 	public void update() throws CorruptIndexException, IOException, ParserConfigurationException, SAXException {
