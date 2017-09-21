@@ -39,6 +39,7 @@ public class PubMedIndexUpdater extends CLIOParser {
 	private final Collection<SourceStream> sources = new ArrayList<SourceStream>();
 	private final Map<String,String> meshPaths = new HashMap<String,String>();
 	private Pattern filenamePattern = Pattern.compile("medline\\d+n\\d+\\.xml(?:\\.gz)?");
+	private boolean checkIndexedFile = true;
 
 	public PubMedIndexUpdater() {
 		super();
@@ -50,28 +51,40 @@ public class PubMedIndexUpdater extends CLIOParser {
 	public void help() {
 		System.out.println(usage());
 	}
+	
+	@CLIOption("-force")
+	public void force() {
+		checkIndexedFile = false;
+	}
 
 	@CLIOption("-index")
 	public void setIndexDir(File indexDir) {
 		this.indexDir = indexDir;
 	}
 	
-	@CLIOption("-mesh-paths")
-	public void addMeSHRoots(String meshRoots) throws IOException, URISyntaxException {
-		SourceStream source = streamFactory.getSourceStream(meshRoots);
+	@CLIOption("-mesh-tree")
+	public void addMeSHRoots(String meshTreeLocation) throws IOException, URISyntaxException {
+		StreamFactory streamFactory = new StreamFactory();
+		streamFactory.setCharset("UTF-16");
+		SourceStream source = streamFactory.getSourceStream(meshTreeLocation);
+		boolean isHeaderLine = true;
 		try (BufferedReader r = source.getBufferedReader()) {
 			while (true) {
 				String line = r.readLine();
 				if (line == null) {
 					break;
 				}
-				line = line.trim();
-				int tab = line.lastIndexOf('\t');
-				if (tab != -1) {
-					String meshId = line.substring(0, tab);
-					String path = line.substring(tab + 1);
-					meshPaths.put(meshId, path);
+				if (isHeaderLine) {
+					isHeaderLine = false;
+					continue;
 				}
+				line = line.trim();
+				int tab = line.indexOf('\t');
+				String meshPath = line.substring(0, tab);
+				String rest = line.substring(tab + 1);
+				tab = rest.indexOf('\t');
+				String meshId = rest.substring(0, tab);
+				meshPaths.put(meshId, meshPath);
 			}
 		}
 	}
@@ -122,7 +135,7 @@ public class PubMedIndexUpdater extends CLIOParser {
 	}
 
 	private boolean shouldParse(PubmedIndexProperties properties, String filename) {
-		if (properties.isIndexedFile(filename)) {
+		if (checkIndexedFile && properties.isIndexedFile(filename)) {
 			return false;
 		}
 		Matcher m = filenamePattern.matcher(filename);
