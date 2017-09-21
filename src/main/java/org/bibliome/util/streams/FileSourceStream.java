@@ -50,8 +50,9 @@ public class FileSourceStream extends AbstractSingleSourceStream {
 	
 	@Override
 	public InputStream getInputStream() throws IOException {
-		InputStream result = compressionFilter.getInputStream(new FileInputStream(file));
-		setStreamName(result, file.getAbsolutePath());
+		String streamName = file.getAbsolutePath();
+		InputStream result = compressionFilter.getInputStream(new FileInputStream(file), streamName);
+		setStreamName(result, streamName);
 		return result;
 	}
 

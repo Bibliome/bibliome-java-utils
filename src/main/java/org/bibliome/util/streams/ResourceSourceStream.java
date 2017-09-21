@@ -40,7 +40,7 @@ public class ResourceSourceStream extends AbstractSingleSourceStream {
 
 	@Override
 	public InputStream getInputStream() throws IOException {
-		InputStream result = compressionFilter.getInputStream(url.openStream());
+		InputStream result = compressionFilter.getInputStream(url.openStream(), name);
 		setStreamName(result, name);
 		return result;
 	}

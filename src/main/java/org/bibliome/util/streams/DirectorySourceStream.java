@@ -51,8 +51,9 @@ public class DirectorySourceStream extends AbstractMultipleSourceStream {
 		@Override
 		public InputStream map(File x) {
 			try {
-				InputStream result = compressionFilter.getInputStream(new FileInputStream(x));
-				setStreamName(result, x.getAbsolutePath());
+				String streamName = x.getAbsolutePath();
+				InputStream result = compressionFilter.getInputStream(new FileInputStream(x), streamName);
+				setStreamName(result, streamName);
 				return result;
 			}
 			catch (IOException e) {
