@@ -22,7 +22,6 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.NumericField;
 import org.bibliome.util.xml.XMLUtils;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -158,9 +157,7 @@ public enum PubMedIndexField {
 		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException {
 			String date = XMLUtils.evaluateString(xPath, doc);
 			String year = extractYear(date);
-			NumericField yearField = new NumericField(fieldName, Field.Store.NO, true);
-			yearField.setIntValue(Integer.parseInt(extractYear(year)));
-			luceneDoc.add(yearField);
+			addField(luceneDoc, year);
 		}
 
 		private String extractYear(String date) {
