@@ -1,6 +1,7 @@
 package org.bibliome.util.pubmed;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -15,6 +16,8 @@ import org.bibliome.util.xml.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 public class PubMedIndexDOMBuilderHandler extends DOMBuilderHandler {
 	public static final String TAG_CITATION = "PubmedArticle";
@@ -91,5 +94,10 @@ public class PubMedIndexDOMBuilderHandler extends DOMBuilderHandler {
 		}
 		Term term = new Term(PubMedIndexField.PMID.fieldName, pmid);
 		indexWriter.updateDocument(term, luceneDoc);
+	}
+
+	@Override
+	public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+        return new InputSource(new StringReader(""));
 	}
 }
