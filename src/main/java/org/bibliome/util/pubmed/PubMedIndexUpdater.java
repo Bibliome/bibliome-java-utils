@@ -27,6 +27,7 @@ import org.bibliome.util.clio.CLIOException;
 import org.bibliome.util.clio.CLIOParser;
 import org.bibliome.util.clio.CLIOption;
 import org.bibliome.util.streams.CollectionSourceStream;
+import org.bibliome.util.streams.CompressionFilter;
 import org.bibliome.util.streams.SourceStream;
 import org.bibliome.util.streams.StreamFactory;
 import org.bibliome.util.xml.XMLUtils;
@@ -37,10 +38,12 @@ public class PubMedIndexUpdater extends CLIOParser {
 	private File indexDir;
 	private final Collection<SourceStream> sources = new ArrayList<SourceStream>();
 	private final Map<String,String> meshPaths = new HashMap<String,String>();
-	private Pattern filenamePattern = Pattern.compile("medline\\d+n\\d+\\.xml");
+	private Pattern filenamePattern = Pattern.compile("medline\\d+n\\d+\\.xml(?:\\.gz)");
 
 	public PubMedIndexUpdater() {
 		super();
+		streamFactory.setCompressionFilter(CompressionFilter.FILE_EXTENSION);
+		streamFactory.setRecursive(true);
 	}
 	
 	@CLIOption(stop=true, value="-help")
