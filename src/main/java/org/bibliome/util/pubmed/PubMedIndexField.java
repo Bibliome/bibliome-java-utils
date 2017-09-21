@@ -51,6 +51,29 @@ public enum PubMedIndexField {
 		}
 	},
 	
+	DOI("doi", "/PubmedArticle/PubmedData/ArticleIdList/ArticleId[@IdType = 'doi']") {
+		@Override
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String, String> meshPaths) throws XPathExpressionException, TransformerException {
+			String doi = XMLUtils.evaluateString(xPath, doc);
+			addField(luceneDoc, doi);
+		}
+
+		@Override
+		protected Analyzer getAnalyzer() {
+			return new KeywordAnalyzer();
+		}
+
+		@Override
+		public boolean isIndexed() {
+			return true;
+		}
+
+		@Override
+		public boolean isStored() {
+			return true;
+		}
+	},
+	
 	MESH_ID("mesh-id", "/PubmedArticle/MedlineCitation/MeshHeadingList/MeshHeading/DescriptorName") {
 		@Override
 		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException {
