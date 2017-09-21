@@ -335,6 +335,9 @@ public enum PubMedIndexField {
 	public abstract boolean isStored();
 	
 	protected void addField(org.apache.lucene.document.Document doc, String fieldValue) {
+		if (fieldValue == null || fieldValue.isEmpty()) {
+			return;
+		}
 		Field.Store store = isStored() ? Field.Store.YES : Field.Store.NO;
 		Field.Index index = isIndexed() ? Field.Index.ANALYZED : Field.Index.NO;
 		Field field = new Field(fieldName, fieldValue, store, index, Field.TermVector.NO);
