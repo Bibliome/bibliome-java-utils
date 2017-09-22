@@ -90,8 +90,10 @@ public class PubMedIndexSearcher extends CLIOParser {
 		Analyzer analyzer = PubMedIndexUtils.getGlobalAnalyzer();
 		QueryParser parser = new QueryParser(PubMedIndexUtils.LUCENE_VERSION, PubMedIndexField.ABSTRACT.fieldName, analyzer);
 		parser.setDefaultOperator(QueryParser.AND_OPERATOR);
+		parser.setLowercaseExpandedTerms(false);
 		System.err.println("parsing query: " + queryString);
 		Query query = parser.parse(queryString);
+		System.err.println("query: " + query);
 		
 		Directory dir = FSDirectory.open(indexDir);
 		try (IndexReader indexReader = IndexReader.open(dir)) {
