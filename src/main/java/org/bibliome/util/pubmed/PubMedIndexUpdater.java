@@ -6,14 +6,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,20 +27,15 @@ import org.bibliome.util.Iterators;
 import org.bibliome.util.clio.CLIOException;
 import org.bibliome.util.clio.CLIOParser;
 import org.bibliome.util.clio.CLIOption;
-import org.bibliome.util.mappers.Mapper;
-import org.bibliome.util.mappers.Mappers;
-import org.bibliome.util.mappers.ToStringMapper;
-import org.bibliome.util.streams.AbstractMultipleSourceStream;
 import org.bibliome.util.streams.CollectionSourceStream;
 import org.bibliome.util.streams.CompressionFilter;
 import org.bibliome.util.streams.SourceStream;
 import org.bibliome.util.streams.StreamFactory;
-import org.bibliome.util.streams.URLSourceStream;
 import org.bibliome.util.xml.XMLUtils;
 import org.xml.sax.SAXException;
 
 public class PubMedIndexUpdater extends CLIOParser {
-	private static final Pattern PUBMED_FILENAME_PATTERN = Pattern.compile("medline\\d+n\\d+\\.xml(?:\\.gz)?");
+	public static final Pattern PUBMED_FILENAME_PATTERN = Pattern.compile("medline\\d+n\\d+\\.xml(?:\\.gz)?");
 	private static final String LOCATION_PUBMED_BASELINE = "ftp://ftp.ncbi.nlm.nih.gov/pubmed/baseline/";
 	private static final String LOCATION_PUBMED_UPDATEFILES = "ftp://ftp.ncbi.nlm.nih.gov/pubmed/updatefiles/";
 
@@ -207,70 +198,5 @@ public class PubMedIndexUpdater extends CLIOParser {
 			throw new CLIOException("missing source files location");
 		}
 		inst.update();
-	}
-	
-	private static class PubMedListingSourceStream extends AbstractMultipleSourceStream {
-		private final URL baseURL;
-		private final Collection<URL> files = new LinkedHashSet<URL>();
-
-		private PubMedListingSourceStream(String baseLocation) throws MalformedURLException, IOException {
-			this(new URL(baseLocation));
-		}
-		
-		private PubMedListingSourceStream(URL baseURL) throws IOException {
-			super("UTF-8");
-			this.baseURL = baseURL;
-			SourceStream source = new URLSourceStream("UTF-8", CompressionFilter.NONE, baseURL);
-			try (BufferedReader r = source.getBufferedReader()) {
-				while (true) {
-					String line = r.readLine();
-					if (line == null) {
-						break;
-					}
-					int space = line.lastIndexOf(' ');
-					String filename = line.substring(space + 1);
-					Matcher m = PUBMED_FILENAME_PATTERN.matcher(filename);
-					if (m.matches()) {
-						URL url = new URL(baseURL, filename);
-						files.add(url);
-					}
-				}
-			}
-		}
-
-		@Override
-		public Collection<String> getStreamNames() {
-			return Mappers.apply(new ToStringMapper<URL>(), files, new ArrayList<String>());
-		}
-		
-		private final Mapper<URL,InputStream> URL_TO_INPUT_STREAM = new Mapper<URL,InputStream>() {
-			@Override
-			public InputStream map(URL x) {
-				try {
-					String streamName = x.toString();
-					InputStream result = CompressionFilter.FILE_EXTENSION.getInputStream(x.openStream(), streamName);
-					setStreamName(result, streamName);
-					return result;
-				}
-				catch (IOException e) {
-					throw new RuntimeException(e);
-				}
-			}
-		};
-		
-		@Override
-		public Iterator<InputStream> getInputStreams() throws IOException {
-			return Mappers.apply(URL_TO_INPUT_STREAM, files.iterator());
-		}
-
-		@Override
-		public boolean check(Logger logger) {
-			return true;
-		}
-
-		@Override
-		protected String getCollectiveName() {
-			return baseURL.toString();
-		}
 	}
 }
