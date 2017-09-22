@@ -133,7 +133,7 @@ public class PubMedIndexSearcher extends CLIOParser {
 		String outputBasePath = String.format(outputBaseFormat, batch);
 		OutputDirectory outputBaseDir = new OutputDirectory(outputBasePath);
 		int start = batch * batchSize;
-		int end = start + Math.min(start + batchSize, topDocs.totalHits);
+		int end = Math.min(start + batchSize, topDocs.totalHits);
 		if (pmidOutputFormat != null) {
 			try (PrintStream out = open(batch, outputBaseDir, pmidOutputFormat)) {
 				for (int d = start; d < end; ++d) {
