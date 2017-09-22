@@ -133,11 +133,11 @@ public class PubMedIndexUpdater extends CLIOParser {
 				String filename = getFilename(streamName);
 				if (shouldParse(properties, filename)) {
 					System.err.format("parsing and indexing: %s (%s)\n", filename, streamName);
-					//Files.copy(is, System.err);
 					handler.resetCounts();
 					handler.setSource(filename);
 					parser.parse(is, handler);
 					properties.addIndexedFile(filename);
+					properties.update(indexWriter);
 					indexWriter.commit();
 					System.err.format("  citations updated: %d, deleted: %d\n", handler.getUpdatedCitationsCount(), handler.getDeletedCitationsCount());
 				}
@@ -145,9 +145,6 @@ public class PubMedIndexUpdater extends CLIOParser {
 					System.err.println("skipping: " + filename);
 				}
 			}
-			System.err.println("updating index properties");
-			properties.update(indexWriter);
-			indexWriter.commit();
 		}
 	}
 
