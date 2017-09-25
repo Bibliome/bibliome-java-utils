@@ -254,6 +254,67 @@ public enum PubMedIndexField {
 			return false;
 		}
 	},
+
+	DATE_REVISED("date-revised", "/PubmedArticle/MedlineCitation/DateRevised") {
+		@Override
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException, TransformerException {
+			Element dateRevised = XMLUtils.evaluateElement(xPath, doc);
+			String fieldValue = getFieldValue(dateRevised);
+			addField(luceneDoc, fieldValue);
+		}
+		
+		private String getFieldValue(Element dateRevised) {
+			if (dateRevised == null) {
+				return null;
+			}
+			String year = null;
+			String month = null;
+			String day = null;
+			for (Element child : XMLUtils.childrenElements(dateRevised)) {
+				String tagName = child.getTagName();
+				String tagContent = child.getTextContent();
+				switch (tagName) {
+					case "Year": {
+						year = tagContent;
+						break;
+					}
+					case "Month": {
+						month = tagContent;
+						break;
+					}
+					case "Day": {
+						day = tagContent;
+						break;
+					}
+				}
+			}
+			if (year == null) {
+				return null;
+			}
+			if (month == null) {
+				return year;
+			}
+			if (day == null) {
+				return year + "-" + month;
+			}
+			return year + "-" + month + "-" + day;
+		}
+
+		@Override
+		protected Analyzer getAnalyzer() {
+			return new KeywordAnalyzer();
+		}
+
+		@Override
+		public boolean isIndexed() {
+			return true;
+		}
+
+		@Override
+		public boolean isStored() {
+			return false;
+		}
+	},
 	
 	SOURCE("source") {
 		@Override
