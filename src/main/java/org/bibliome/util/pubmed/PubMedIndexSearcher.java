@@ -1,18 +1,26 @@
 package org.bibliome.util.pubmed;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URISyntaxException;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -22,6 +30,8 @@ import org.bibliome.util.clio.CLIOption;
 import org.bibliome.util.files.OutputDirectory;
 import org.bibliome.util.files.OutputFile;
 import org.bibliome.util.streams.FileTargetStream;
+import org.bibliome.util.streams.SourceStream;
+import org.bibliome.util.streams.StreamFactory;
 import org.bibliome.util.streams.TargetStream;
 
 public class PubMedIndexSearcher extends CLIOParser {
@@ -29,8 +39,8 @@ public class PubMedIndexSearcher extends CLIOParser {
 	private static final String XML_FOOTER = "</PubmedArticleSet>";
 	private static final CharSequence BATCH_NUMBER_PLACEHOLDER = "%%";
 
-	private String queryString;
-	private File indexDir;
+	private BooleanQuery query = new BooleanQuery();
+	private File indexDir = null;
 	private int batchSize = Integer.MAX_VALUE;
 	private String outputBaseFormat = ".";
 	private String pmidOutputFormat = null;
@@ -38,8 +48,24 @@ public class PubMedIndexSearcher extends CLIOParser {
 
 	@Override
 	protected boolean processArgument(String arg) throws CLIOException {
-		queryString = arg;
-		return false;
+		try {
+			Analyzer analyzer = PubMedIndexUtils.getGlobalAnalyzer();
+			QueryParser parser = new QueryParser(PubMedIndexUtils.LUCENE_VERSION, PubMedIndexField.ABSTRACT.fieldName, analyzer);
+			parser.setDefaultOperator(QueryParser.AND_OPERATOR);
+			parser.setLowercaseExpandedTerms(false);
+			System.err.println("parsing query: " + arg);
+			Query q = parser.parse(arg);
+			System.err.println("query: " + q);
+			addClause(q);
+			return false;
+		}
+		catch (ParseException e) {
+			throw new CLIOException(e);
+		}
+	}
+	
+	private void addClause(Query q) {
+		query.add(q, Occur.MUST);
 	}
 
 	@Override
@@ -60,10 +86,69 @@ public class PubMedIndexSearcher extends CLIOParser {
 			}
 		}
 	}
-
+	
 	@CLIOption("-index")
 	public void setIndexDir(File indexDir) {
 		this.indexDir = indexDir;
+	}
+
+	@CLIOption("-pmid-query")
+	public void addPMIDList(String location) throws IOException, URISyntaxException {
+		addListQuery(location, PubMedIndexField.PMID, QueryFactory.TERM);
+	}
+
+	@CLIOption("-doi-query")
+	public void addDOIList(String location) throws IOException, URISyntaxException {
+		addListQuery(location, PubMedIndexField.DOI, QueryFactory.TERM);
+	}
+
+	@CLIOption("-mesh-tree-query")
+	public void addMeSHTreeList(String location) throws IOException, URISyntaxException {
+		addListQuery(location, PubMedIndexField.MESH_TREE, QueryFactory.PREFIX);
+	}
+	
+	private static enum QueryFactory {
+		TERM {
+			@Override
+			public Query createQuery(Term term) {
+				return new TermQuery(term);
+			}
+		},
+		PREFIX {
+			@Override
+			public Query createQuery(Term term) {
+				return new PrefixQuery(term);
+			}
+		};
+		
+		public Query createQuery(PubMedIndexField field, String text) {
+			return createQuery(new Term(field.fieldName, text));
+		}
+		
+		protected abstract Query createQuery(Term term);
+	}
+
+	private void addListQuery(String location, PubMedIndexField field, QueryFactory queryFactory) throws IOException, URISyntaxException {
+		BooleanQuery booleanQuery = new BooleanQuery();
+		StreamFactory streamFactory = new StreamFactory();
+		SourceStream source = streamFactory.getSourceStream(location);
+		try (BufferedReader r = source.getBufferedReader()) {
+			while (true) {
+				String line = r.readLine();
+				if (line == null) {
+					break;
+				}
+				Query q = queryFactory.createQuery(field, line.trim());
+				booleanQuery.add(q, Occur.SHOULD);
+			}
+		}
+		addClause(booleanQuery);
+	}
+
+	@CLIOption("-after")
+	public void addRevisionDate(String date) {
+		Query q = new TermRangeQuery(PubMedIndexField.DATE_REVISED.fieldName, date, "9", true, false);
+		addClause(q);
 	}
 
 	@CLIOption("-batch")
@@ -86,15 +171,7 @@ public class PubMedIndexSearcher extends CLIOParser {
 		this.xmlOutputFormat = xmlOutputFormat;
 	}
 
-	private void search() throws ParseException, IOException {
-		Analyzer analyzer = PubMedIndexUtils.getGlobalAnalyzer();
-		QueryParser parser = new QueryParser(PubMedIndexUtils.LUCENE_VERSION, PubMedIndexField.ABSTRACT.fieldName, analyzer);
-		parser.setDefaultOperator(QueryParser.AND_OPERATOR);
-		parser.setLowercaseExpandedTerms(false);
-		System.err.println("parsing query: " + queryString);
-		Query query = parser.parse(queryString);
-		System.err.println("query: " + query);
-		
+	private void search() throws IOException {		
 		Directory dir = FSDirectory.open(indexDir);
 		try (IndexReader indexReader = IndexReader.open(dir)) {
 			try (IndexSearcher indexSearcher = new IndexSearcher(indexReader)) {
@@ -172,7 +249,7 @@ public class PubMedIndexSearcher extends CLIOParser {
 		if (inst.parse(args)) {
 			return;
 		}
-		if (inst.queryString == null) {
+		if (inst.query.clauses().isEmpty()) {
 			throw new CLIOException("missing query");
 		}
 		if (inst.indexDir == null) {
