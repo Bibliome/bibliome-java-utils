@@ -71,6 +71,7 @@ public class PubMedIndexUpdater extends CLIOParser {
 		StreamFactory streamFactory = new StreamFactory();
 		streamFactory.setCharset("UTF-16");
 		SourceStream source = streamFactory.getSourceStream(meshTreeLocation);
+		System.err.format("Reading MeSH descriptor tree from %s\n", meshTreeLocation);
 		boolean isHeaderLine = true;
 		try (BufferedReader r = source.getBufferedReader()) {
 			while (true) {
