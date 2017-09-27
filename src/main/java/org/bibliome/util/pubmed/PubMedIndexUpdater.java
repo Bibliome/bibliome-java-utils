@@ -46,7 +46,7 @@ public class PubMedIndexUpdater extends CLIOParser {
 
 		@Override
 		public boolean accept(File file) {
-			String name = file.getName();
+			String name = getFilename(file.getAbsolutePath());
 			Matcher m = PUBMED_FILENAME_PATTERN.matcher(name);
 			if (!m.matches()) {
 				return false;

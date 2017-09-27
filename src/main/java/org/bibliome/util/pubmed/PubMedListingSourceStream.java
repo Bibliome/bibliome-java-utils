@@ -79,7 +79,6 @@ class PubMedListingSourceStream extends AbstractMultipleSourceStream {
 		@Override
 		public boolean accept(URL x) {
 			String fn = x.getFile();
-			System.err.println("fn = " + fn);
 			return fileFilter.accept(new File(fn));
 		}
 	};
