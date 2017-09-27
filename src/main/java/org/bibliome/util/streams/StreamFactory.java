@@ -38,7 +38,7 @@ public class StreamFactory {
 	private String charset = "UTF-8";
 	private CompressionFilter compressionFilter = CompressionFilter.NONE;
 	private boolean recursive = false;
-	private FileFilter filter = null;
+	private FileFilter filter = AcceptAllFiles.INSTANCE;
 	private List<String> inputDirs = null;
 
 	public StreamFactory() {
@@ -122,7 +122,7 @@ public class StreamFactory {
 	
 	public FileSourceStream getFileSourceStream(String path) {
 		InputFile file = AbstractFile.getInputFile(INPUT_FILE_FACTORY, inputDirs, path);
-		return new FileSourceStream(charset, compressionFilter, file);
+		return new FileSourceStream(charset, compressionFilter, file, filter);
 	}
 
 	private static String uriToResourceName(URI uri) {
