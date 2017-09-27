@@ -1,6 +1,8 @@
 package org.bibliome.util.pubmed;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -12,6 +14,8 @@ import java.util.LinkedHashSet;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 
+import org.bibliome.util.filters.Filter;
+import org.bibliome.util.filters.Filters;
 import org.bibliome.util.mappers.Mapper;
 import org.bibliome.util.mappers.Mappers;
 import org.bibliome.util.mappers.ToStringMapper;
@@ -23,14 +27,16 @@ import org.bibliome.util.streams.URLSourceStream;
 class PubMedListingSourceStream extends AbstractMultipleSourceStream {
 	private final URL baseURL;
 	private final Collection<URL> files = new LinkedHashSet<URL>();
+	private final FileFilter fileFilter;
 
-	PubMedListingSourceStream(String baseLocation) throws MalformedURLException, IOException {
-		this(new URL(baseLocation));
+	PubMedListingSourceStream(String baseLocation, FileFilter fileFilter) throws MalformedURLException, IOException {
+		this(new URL(baseLocation), fileFilter);
 	}
 	
-	private PubMedListingSourceStream(URL baseURL) throws IOException {
+	private PubMedListingSourceStream(URL baseURL, FileFilter fileFilter) throws IOException {
 		super("UTF-8");
 		this.baseURL = baseURL;
+		this.fileFilter = fileFilter;
 		SourceStream source = new URLSourceStream("UTF-8", CompressionFilter.NONE, baseURL);
 		try (BufferedReader r = source.getBufferedReader()) {
 			while (true) {
@@ -69,9 +75,17 @@ class PubMedListingSourceStream extends AbstractMultipleSourceStream {
 		}
 	};
 	
+	private final Filter<URL> URL_FILTER = new Filter<URL>() {
+		@Override
+		public boolean accept(URL x) {
+			String fn = x.getFile();
+			return fileFilter.accept(new File(fn));
+		}
+	};
+	
 	@Override
 	public Iterator<InputStream> getInputStreams() throws IOException {
-		return Mappers.apply(URL_TO_INPUT_STREAM, files.iterator());
+		return Mappers.apply(URL_TO_INPUT_STREAM, Filters.apply(URL_FILTER, files.iterator()));
 	}
 
 	@Override

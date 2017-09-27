@@ -2,6 +2,7 @@ package org.bibliome.util.pubmed;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -39,6 +40,29 @@ public class PubMedIndexUpdater extends CLIOParser {
 	private static final String LOCATION_PUBMED_BASELINE = "ftp://ftp.ncbi.nlm.nih.gov/pubmed/baseline/";
 	private static final String LOCATION_PUBMED_UPDATEFILES = "ftp://ftp.ncbi.nlm.nih.gov/pubmed/updatefiles/";
 
+	private static class PubMedFileFilter implements FileFilter {
+		private PubmedIndexProperties properties = null;
+
+		@Override
+		public boolean accept(File file) {
+			String name = file.getName();
+			Matcher m = PUBMED_FILENAME_PATTERN.matcher(name);
+			if (!m.matches()) {
+				return false;
+			}
+			if (properties.isIndexedFile(name)) {
+				System.err.println("Skipping: " + file);
+				return false;
+			}
+			return true;
+		}
+		
+		private void setProperties(PubmedIndexProperties properties) {
+			this.properties = properties;
+		}
+	}
+	
+	private final PubMedFileFilter fileFilter = new PubMedFileFilter();
 	private final StreamFactory streamFactory = new StreamFactory();
 	private File indexDir;
 	private final Collection<SourceStream> sources = new ArrayList<SourceStream>();
@@ -49,6 +73,7 @@ public class PubMedIndexUpdater extends CLIOParser {
 		super();
 		streamFactory.setCompressionFilter(CompressionFilter.FILE_EXTENSION);
 		streamFactory.setRecursive(true);
+		streamFactory.setFilter(fileFilter);
 	}
 	
 	@CLIOption(stop=true, value="-help")
@@ -96,13 +121,13 @@ public class PubMedIndexUpdater extends CLIOParser {
 
 	@CLIOption("-baseline")
 	public void downloadBaseline() throws MalformedURLException, IOException {
-		SourceStream source = new PubMedListingSourceStream(LOCATION_PUBMED_BASELINE);
+		SourceStream source = new PubMedListingSourceStream(LOCATION_PUBMED_BASELINE, fileFilter);
 		sources.add(source);
 	}
 
 	@CLIOption("-update-files")
 	public void downloadUpdateFiles() throws MalformedURLException, IOException {
-		SourceStream source = new PubMedListingSourceStream(LOCATION_PUBMED_UPDATEFILES);
+		SourceStream source = new PubMedListingSourceStream(LOCATION_PUBMED_UPDATEFILES, fileFilter);
 		sources.add(source);
 	}
 
@@ -128,6 +153,7 @@ public class PubMedIndexUpdater extends CLIOParser {
 			SAXParser parser = createParser();
 			PubMedIndexDOMBuilderHandler handler = new PubMedIndexDOMBuilderHandler(XMLUtils.docBuilder, indexWriter, meshPaths);
 			PubmedIndexProperties properties = new PubmedIndexProperties(indexWriter);
+			fileFilter.setProperties(properties);
 			SourceStream source = new CollectionSourceStream("UTF-8", sources);
 			for (InputStream is : Iterators.loop(source.getInputStreams())) {
 				String streamName = source.getStreamName(is);
