@@ -52,7 +52,7 @@ public class PubMedIndexUpdater extends CLIOParser {
 				return false;
 			}
 			if (checkIndexedFile && properties.isIndexedFile(name)) {
-				System.err.println("Skipping: " + file);
+				PubMedIndexUtils.log("skipping: %s", file);
 				return false;
 			}
 			return true;
@@ -92,7 +92,7 @@ public class PubMedIndexUpdater extends CLIOParser {
 		StreamFactory streamFactory = new StreamFactory();
 		streamFactory.setCharset("UTF-16");
 		SourceStream source = streamFactory.getSourceStream(meshTreeLocation);
-		System.err.format("Reading MeSH descriptor tree from %s\n", meshTreeLocation);
+		PubMedIndexUtils.log("reading MeSH descriptor tree from %s", meshTreeLocation);
 		boolean isHeaderLine = true;
 		try (BufferedReader r = source.getBufferedReader()) {
 			while (true) {
@@ -117,12 +117,14 @@ public class PubMedIndexUpdater extends CLIOParser {
 
 	@CLIOption("-baseline")
 	public void downloadBaseline() throws MalformedURLException, IOException {
+		PubMedIndexUtils.log("downloading baseline file list: %s", LOCATION_PUBMED_BASELINE);
 		SourceStream source = new PubMedListingSourceStream(LOCATION_PUBMED_BASELINE, fileFilter);
 		sources.add(source);
 	}
 
 	@CLIOption("-update-files")
 	public void downloadUpdateFiles() throws MalformedURLException, IOException {
+		PubMedIndexUtils.log("downloading update file list: %s", LOCATION_PUBMED_UPDATEFILES);
 		SourceStream source = new PubMedListingSourceStream(LOCATION_PUBMED_UPDATEFILES, fileFilter);
 		sources.add(source);
 	}
@@ -154,18 +156,19 @@ public class PubMedIndexUpdater extends CLIOParser {
 			for (InputStream is : Iterators.loop(source.getInputStreams())) {
 				String streamName = source.getStreamName(is);
 				String filename = getFilename(streamName);
-				System.err.format("parsing and indexing: %s (%s)\n", filename, streamName);
+				PubMedIndexUtils.log("parsing and indexing: %s", filename);
 				handler.resetCounts();
 				handler.setSource(filename);
 				parser.parse(is, handler);
 				properties.addIndexedFile(filename);
 				properties.update(indexWriter);
 				indexWriter.commit();
-				System.err.format("  citations updated: %d, deleted: %d\n", handler.getUpdatedCitationsCount(), handler.getDeletedCitationsCount());
+				PubMedIndexUtils.log("citations updated: %d", handler.getUpdatedCitationsCount());
+				PubMedIndexUtils.log("citations deleted: %d", handler.getDeletedCitationsCount());
 			}
 		}
 	}
-	
+
 	private static String getFilename(String streamName) {
 		int slash = streamName.lastIndexOf(File.separatorChar);
 		if (slash == -1) {

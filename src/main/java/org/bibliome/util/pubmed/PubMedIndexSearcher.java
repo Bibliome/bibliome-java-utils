@@ -53,9 +53,9 @@ public class PubMedIndexSearcher extends CLIOParser {
 			QueryParser parser = new QueryParser(PubMedIndexUtils.LUCENE_VERSION, PubMedIndexField.ABSTRACT.fieldName, analyzer);
 			parser.setDefaultOperator(QueryParser.AND_OPERATOR);
 			parser.setLowercaseExpandedTerms(false);
-			System.err.println("parsing query: " + arg);
+			PubMedIndexUtils.log("parsing query: %s", arg);
 			Query q = parser.parse(arg);
-			System.err.println("query: " + q);
+			PubMedIndexUtils.log("query: %s", q);
 			addClause(q);
 			return false;
 		}
@@ -176,7 +176,7 @@ public class PubMedIndexSearcher extends CLIOParser {
 		try (IndexReader indexReader = IndexReader.open(dir)) {
 			try (IndexSearcher indexSearcher = new IndexSearcher(indexReader)) {
 				TopDocs topDocs = indexSearcher.search(query, Integer.MAX_VALUE);
-				System.err.format("found %d hits\n", topDocs.totalHits);
+				PubMedIndexUtils.log("found %d hits", topDocs.totalHits);
 				output(indexReader, topDocs);
 			}
 		}
