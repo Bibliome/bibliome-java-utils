@@ -42,6 +42,7 @@ public class PubMedIndexUpdater extends CLIOParser {
 
 	private static class PubMedFileFilter implements FileFilter {
 		private PubmedIndexProperties properties = null;
+		private boolean checkIndexedFile = true;
 
 		@Override
 		public boolean accept(File file) {
@@ -50,15 +51,11 @@ public class PubMedIndexUpdater extends CLIOParser {
 			if (!m.matches()) {
 				return false;
 			}
-			if (properties.isIndexedFile(name)) {
+			if (checkIndexedFile && properties.isIndexedFile(name)) {
 				System.err.println("Skipping: " + file);
 				return false;
 			}
 			return true;
-		}
-		
-		private void setProperties(PubmedIndexProperties properties) {
-			this.properties = properties;
 		}
 	}
 	
@@ -67,7 +64,6 @@ public class PubMedIndexUpdater extends CLIOParser {
 	private File indexDir;
 	private final Collection<SourceStream> sources = new ArrayList<SourceStream>();
 	private final Map<String,String> meshPaths = new HashMap<String,String>();
-	private boolean checkIndexedFile = true;
 
 	public PubMedIndexUpdater() {
 		super();
@@ -83,7 +79,7 @@ public class PubMedIndexUpdater extends CLIOParser {
 	
 	@CLIOption("-force")
 	public void force() {
-		checkIndexedFile = false;
+		fileFilter.checkIndexedFile = false;
 	}
 
 	@CLIOption("-index")
@@ -153,34 +149,21 @@ public class PubMedIndexUpdater extends CLIOParser {
 			SAXParser parser = createParser();
 			PubMedIndexDOMBuilderHandler handler = new PubMedIndexDOMBuilderHandler(XMLUtils.docBuilder, indexWriter, meshPaths);
 			PubmedIndexProperties properties = new PubmedIndexProperties(indexWriter);
-			fileFilter.setProperties(properties);
+			fileFilter.properties = properties;
 			SourceStream source = new CollectionSourceStream("UTF-8", sources);
 			for (InputStream is : Iterators.loop(source.getInputStreams())) {
 				String streamName = source.getStreamName(is);
 				String filename = getFilename(streamName);
-				if (shouldParse(properties, filename)) {
-					System.err.format("parsing and indexing: %s (%s)\n", filename, streamName);
-					handler.resetCounts();
-					handler.setSource(filename);
-					parser.parse(is, handler);
-					properties.addIndexedFile(filename);
-					properties.update(indexWriter);
-					indexWriter.commit();
-					System.err.format("  citations updated: %d, deleted: %d\n", handler.getUpdatedCitationsCount(), handler.getDeletedCitationsCount());
-				}
-				else {
-					System.err.println("skipping: " + filename);
-				}
+				System.err.format("parsing and indexing: %s (%s)\n", filename, streamName);
+				handler.resetCounts();
+				handler.setSource(filename);
+				parser.parse(is, handler);
+				properties.addIndexedFile(filename);
+				properties.update(indexWriter);
+				indexWriter.commit();
+				System.err.format("  citations updated: %d, deleted: %d\n", handler.getUpdatedCitationsCount(), handler.getDeletedCitationsCount());
 			}
 		}
-	}
-
-	private boolean shouldParse(PubmedIndexProperties properties, String filename) {
-		if (checkIndexedFile && properties.isIndexedFile(filename)) {
-			return false;
-		}
-		Matcher m = PUBMED_FILENAME_PATTERN.matcher(filename);
-		return m.matches();
 	}
 	
 	private static String getFilename(String streamName) {
