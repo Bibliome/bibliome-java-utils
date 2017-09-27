@@ -244,7 +244,7 @@ public class PubMedIndexSearcher extends CLIOParser {
 		out.println(value);
 	}
 	
-	public static void main(String[] args) throws CLIOException, ParseException, IOException {
+	public static void main(String[] args) throws CLIOException, IOException {
 		PubMedIndexSearcher inst = new PubMedIndexSearcher();
 		if (inst.parse(args)) {
 			return;
