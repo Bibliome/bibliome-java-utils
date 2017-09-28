@@ -171,9 +171,6 @@ public class PubMedIndexUpdater extends CLIOParser {
 
 	private static String getFilename(String streamName) {
 		int slash = streamName.lastIndexOf(File.separatorChar);
-		if (slash == -1) {
-			return streamName;
-		}
 		String filename = streamName.substring(slash + 1);
 		return filename.replace(".gz", "");
 	}
