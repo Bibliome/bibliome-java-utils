@@ -55,6 +55,7 @@
               <debugParser>true</debugParser>
               <sanityCheck>true</sanityCheck>
               <buildTokenManager>true</buildTokenManager>
+	      <suppressWarnings>true</suppressWarnings>
               <sourceDirectory>src/main/resources/org/bibliome/util/pattern/tabular/parser</sourceDirectory>
               <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
             </configuration>
@@ -74,6 +75,7 @@
               <debugParser>true</debugParser>
               <sanityCheck>true</sanityCheck>
               <buildTokenManager>true</buildTokenManager>
+	      <suppressWarnings>true</suppressWarnings>
               <sourceDirectory>src/main/resources/org/bibliome/util/yatea/pattern/parser</sourceDirectory>
               <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
             </configuration>
