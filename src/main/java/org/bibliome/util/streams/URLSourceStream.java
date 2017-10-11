@@ -34,8 +34,9 @@ public class URLSourceStream extends AbstractSingleSourceStream {
 
 	@Override
 	public InputStream getInputStream() throws IOException {
-		InputStream result = compressionFilter.getInputStream(url.openStream());
-		setStreamName(result, url.toString());
+		String streamName = url.toString();
+		InputStream result = compressionFilter.getInputStream(url.openStream(), streamName);
+		setStreamName(result, streamName);
 		return result;
 	}
 

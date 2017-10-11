@@ -34,7 +34,7 @@ public class InputStreamSourceStream extends AbstractSingleSourceStream {
 
 	@Override
 	public InputStream getInputStream() throws IOException {
-		InputStream result = compressionFilter.getInputStream(is);
+		InputStream result = compressionFilter.getInputStream(is, name);
 		setStreamName(result, name);
 		return result;
 	}

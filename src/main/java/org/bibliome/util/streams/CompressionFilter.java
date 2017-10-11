@@ -23,17 +23,27 @@ import java.util.zip.GZIPInputStream;
 public enum CompressionFilter {
 	NONE {
 		@Override
-		public InputStream getInputStream(InputStream is) throws IOException {
+		public InputStream getInputStream(InputStream is, String streamName) throws IOException {
 			return is;
 		}
 	},
 	
 	GZIP {
 		@Override
-		public InputStream getInputStream(InputStream is) throws IOException {
+		public InputStream getInputStream(InputStream is, String streamName) throws IOException {
 			return new GZIPInputStream(is);
+		}
+	},
+	
+	FILE_EXTENSION {
+		@Override
+		public InputStream getInputStream(InputStream is, String streamName) throws IOException {
+			if (streamName.endsWith(".gz")) {
+				return GZIP.getInputStream(is, streamName);
+			}
+			return NONE.getInputStream(is, streamName);
 		}
 	};
 	
-	public abstract InputStream getInputStream(InputStream is) throws IOException;
+	public abstract InputStream getInputStream(InputStream is, String streamName) throws IOException;
 }

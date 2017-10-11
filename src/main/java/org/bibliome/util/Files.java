@@ -130,19 +130,43 @@ public class Files {
      * @throws IOException
      */
     public static final void copy(InputStream source, File dest, byte[] buffer, boolean close) throws IOException {
-    	OutputStream os = new FileOutputStream(dest);
+    	try (OutputStream os = new FileOutputStream(dest)) {
+    		copy(source, os, buffer, close);
+    	}
+    }
+    
+    public static final void copy(InputStream source, OutputStream os, byte[] buffer, boolean close) throws IOException {
     	try {
         	int len;
     		while ((len = source.read(buffer)) >= 0)
     			os.write(buffer, 0, len);
     	}
     	finally {
-    		os.close();
     		if (close)
     			source.close();
     	}
     }
     
+    public static final void copy(InputStream source, OutputStream os, int bufferSize, boolean close) throws IOException {
+		copy(source, os, new byte[bufferSize], close);
+    }
+    
+    public static final void copy(InputStream source, OutputStream os, boolean close) throws IOException {
+		copy(source, os, 1024, close);
+    }
+
+    public static final void copy(InputStream source, OutputStream os, byte[] buffer) throws IOException {
+    	copy(source, os, buffer, false);
+    }
+    
+    public static final void copy(InputStream source, OutputStream os, int bufferSize) throws IOException {
+		copy(source, os, new byte[bufferSize]);
+    }
+    
+    public static final void copy(InputStream source, OutputStream os) throws IOException {
+		copy(source, os, 1024);
+    }
+
     /**
      * Copy the specified stream into the specified file.
      * @param source
