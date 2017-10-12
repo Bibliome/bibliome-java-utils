@@ -56,7 +56,7 @@
               <sanityCheck>true</sanityCheck>
               <buildTokenManager>true</buildTokenManager>
 	      <suppressWarnings>true</suppressWarnings>
-              <sourceDirectory>src/main/resources/org/bibliome/util/pattern/tabular/parser</sourceDirectory>
+              <sourceDirectory>src/main/resources/fr/inra/maiage/bibliome/util/pattern/tabular/parser</sourceDirectory>
               <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
             </configuration>
           </execution>
@@ -76,7 +76,7 @@
               <sanityCheck>true</sanityCheck>
               <buildTokenManager>true</buildTokenManager>
 	      <suppressWarnings>true</suppressWarnings>
-              <sourceDirectory>src/main/resources/org/bibliome/util/yatea/pattern/parser</sourceDirectory>
+              <sourceDirectory>src/main/resources/fr/inra/maiage/bibliome/util/yatea/pattern/parser</sourceDirectory>
               <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
             </configuration>
           </execution>
