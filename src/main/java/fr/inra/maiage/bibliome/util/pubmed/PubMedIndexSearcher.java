@@ -203,7 +203,7 @@ public class PubMedIndexSearcher extends CLIOParser {
 	
 	private static String getBatchNumberFormat(int nBatches) {
 		double nLog = Math.log10(nBatches);
-		int nDigits = (int) Math.ceil(nLog);
+		int nDigits = Math.max((int) Math.ceil(nLog), 1);
 		return String.format("%%0%dd", nDigits);
 	}
 
