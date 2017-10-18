@@ -179,6 +179,7 @@ public class PubMedIndexSearcher extends CLIOParser {
 				TopDocs topDocs = indexSearcher.search(query, Integer.MAX_VALUE);
 				PubMedIndexUtils.log("found %d hits", topDocs.totalHits);
 				output(indexReader, topDocs);
+				PubMedIndexUtils.log("done");
 			}
 		}
 	}
@@ -189,6 +190,7 @@ public class PubMedIndexSearcher extends CLIOParser {
 		String outputBaseFormat = createFormatString(this.outputBaseFormat, batchNumberFormat);
 		String pmidOutputFormat = createFormatString(this.pmidOutputFormat, batchNumberFormat);
 		String xmlOutputFormat = createFormatString(this.xmlOutputFormat, batchNumberFormat);
+		PubMedIndexUtils.log("creating %d batches", nBatches);
 		for (int batch = 0; batch < nBatches; ++batch) {
 			outputBatch(indexReader, topDocs, batch, outputBaseFormat, pmidOutputFormat, xmlOutputFormat);
 		}
@@ -234,6 +236,7 @@ public class PubMedIndexSearcher extends CLIOParser {
 		String outputPath = String.format(outputFormat, batch);
 		OutputFile outputFile = new OutputFile(outputBaseDir, outputPath);
 		TargetStream target = new FileTargetStream("UTF-8", outputFile);
+		PubMedIndexUtils.log("writing to %s", outputPath);
 		return target.getPrintStream();
 	}
 
