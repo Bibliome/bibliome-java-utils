@@ -11,9 +11,9 @@ if [ "$INSTALL_DIR" != "$PWD" ];
 then
     mkdir -p "$INSTALL_DIR"
     rm -f -r "$BIN_DIR"
-    mkdir "$BIN_DIR"
+    mkdir -p "$BIN_DIR"
     rm -f -r "$LIB_DIR"
-    mkdir "$LIB_DIR"
+    mkdir -p "$LIB_DIR"
 
     cp -f -r $LIB_FILES "$LIB_DIR"
 fi
