@@ -10,6 +10,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,6 +28,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.xml.sax.SAXException;
 
 import fr.inra.maiage.bibliome.util.Iterators;
+import fr.inra.maiage.bibliome.util.Strings;
 import fr.inra.maiage.bibliome.util.clio.CLIOException;
 import fr.inra.maiage.bibliome.util.clio.CLIOParser;
 import fr.inra.maiage.bibliome.util.clio.CLIOption;
@@ -40,6 +42,7 @@ public class PubMedIndexUpdater extends CLIOParser {
 	public static final Pattern PUBMED_FILENAME_PATTERN = Pattern.compile("medline\\d+n\\d+\\.xml(?:\\.gz)?");
 	private static final String LOCATION_PUBMED_BASELINE = "ftp://ftp.ncbi.nlm.nih.gov/pubmed/baseline/";
 	private static final String LOCATION_PUBMED_UPDATEFILES = "ftp://ftp.ncbi.nlm.nih.gov/pubmed/updatefiles/";
+	private static final String LOCATION_PUBMED_OPEN = "";
 
 	private static class PubMedFileFilter implements FileFilter {
 		private PubmedIndexProperties properties = null;
@@ -65,6 +68,7 @@ public class PubMedIndexUpdater extends CLIOParser {
 	private File indexDir;
 	private final Collection<SourceStream> sources = new ArrayList<SourceStream>();
 	private final Map<String,String> meshPaths = new HashMap<String,String>();
+	private final Map<String,String> openLicenses = new HashMap<String,String>();
 
 	public PubMedIndexUpdater() {
 		super();
@@ -130,6 +134,31 @@ public class PubMedIndexUpdater extends CLIOParser {
 		sources.add(source);
 	}
 
+	@CLIOption("-open-access")
+	public void indexOpenAccessStatus() throws IOException, URISyntaxException {
+		PubMedIndexUtils.log("downloading open access list: %s", LOCATION_PUBMED_OPEN);
+		SourceStream source = streamFactory.getSourceStream(LOCATION_PUBMED_OPEN);
+		try (BufferedReader r = source.getBufferedReader()) {
+			while (true) {
+				String line = r.readLine();
+				if (line == null) {
+					break;
+				}
+				List<String> cols = Strings.split(line, '\t', -1);
+				String pmid = cols.get(5);
+				if (pmid.isEmpty()) {
+					continue;
+				}
+				if (!pmid.startsWith("PMID:")) {
+					continue;
+				}
+				pmid = pmid.substring(5);
+				String license = cols.get(6);
+				openLicenses.put(pmid, license);
+			}
+		}
+	}
+
 	@Override
 	protected boolean processArgument(String arg) throws CLIOException {
 		try {
@@ -150,7 +179,7 @@ public class PubMedIndexUpdater extends CLIOParser {
 	public void update() throws CorruptIndexException, IOException, ParserConfigurationException, SAXException {
 		try (IndexWriter indexWriter = openIndexWriter(indexDir)) {
 			SAXParser parser = createParser();
-			PubMedIndexDOMBuilderHandler handler = new PubMedIndexDOMBuilderHandler(XMLUtils.docBuilder, indexWriter, meshPaths);
+			PubMedIndexDOMBuilderHandler handler = new PubMedIndexDOMBuilderHandler(XMLUtils.docBuilder, indexWriter, meshPaths, openLicenses);
 			PubmedIndexProperties properties = new PubmedIndexProperties(indexWriter);
 			fileFilter.properties = properties;
 			SourceStream source = new CollectionSourceStream("UTF-8", sources);

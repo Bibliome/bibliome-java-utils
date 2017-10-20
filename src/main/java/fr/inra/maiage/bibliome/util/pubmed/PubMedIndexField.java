@@ -31,7 +31,7 @@ import fr.inra.maiage.bibliome.util.xml.XMLUtils;
 public enum PubMedIndexField {
 	PMID("pmid", "/PubmedArticle/MedlineCitation/PMID") {
 		@Override
-		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException {
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths, String openLicense) throws XPathExpressionException {
 			String pmid = XMLUtils.evaluateString(xPath, doc);
 			addField(luceneDoc, pmid);
 		}
@@ -54,7 +54,7 @@ public enum PubMedIndexField {
 	
 	DOI("doi", "/PubmedArticle/PubmedData/ArticleIdList/ArticleId[@IdType = 'doi']") {
 		@Override
-		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String, String> meshPaths) throws XPathExpressionException, TransformerException {
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String, String> meshPaths, String openLicense) throws XPathExpressionException, TransformerException {
 			String doi = XMLUtils.evaluateString(xPath, doc);
 			addField(luceneDoc, doi);
 		}
@@ -77,7 +77,7 @@ public enum PubMedIndexField {
 	
 	MESH_ID("mesh-id", "/PubmedArticle/MedlineCitation/MeshHeadingList/MeshHeading/DescriptorName") {
 		@Override
-		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException {
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths, String openLicense) throws XPathExpressionException {
 			for (Element mesh : XMLUtils.evaluateElements(xPath, doc)) {
 				String meshId = mesh.getAttribute(ATTRIBUTE_MESH_ID);
 				addField(luceneDoc, meshId);
@@ -102,7 +102,7 @@ public enum PubMedIndexField {
 	
 	MESH_TREE("mesh-tree", "/PubmedArticle/MedlineCitation/MeshHeadingList/MeshHeading/DescriptorName") {
 		@Override
-		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException {
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths, String openLicense) throws XPathExpressionException {
 			for (Element mesh : XMLUtils.evaluateElements(xPath, doc)) {
 				String meshId = mesh.getAttribute(ATTRIBUTE_MESH_ID);
 				if (meshPaths.containsKey(meshId)) {
@@ -130,7 +130,7 @@ public enum PubMedIndexField {
 
 	TITLE("title", "/PubmedArticle/MedlineCitation/Article/ArticleTitle") {
 		@Override
-		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException {
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths, String openLicense) throws XPathExpressionException {
 			String title = XMLUtils.evaluateString(xPath, doc);
 			addField(luceneDoc, title);
 		}
@@ -153,7 +153,7 @@ public enum PubMedIndexField {
 
 	ABSTRACT("abstract", "/PubmedArticle/MedlineCitation/Article/Abstract/AbstractText") {
 		@Override
-		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException, DOMException {
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths, String openLicense) throws XPathExpressionException, DOMException {
 			for (Element abs : XMLUtils.evaluateElements(xPath, doc)) {
 				String absText = abs.getTextContent();
 				addField(luceneDoc, absText);
@@ -178,7 +178,7 @@ public enum PubMedIndexField {
 
 	YEAR("year", "/PubmedArticle/MedlineCitation/Article/Journal/JournalIssue/PubDate/*[name() = 'Year' or name() = 'MedlineDate']") {
 		@Override
-		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException {
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths, String openLicense) throws XPathExpressionException {
 			String date = XMLUtils.evaluateString(xPath, doc);
 			String year = extractYear(date);
 			addField(luceneDoc, year);
@@ -210,7 +210,7 @@ public enum PubMedIndexField {
 
 	JOURNAL("journal", "/PubmedArticle/MedlineCitation/Article/Journal/Title") {
 		@Override
-		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException {
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths, String openLicense) throws XPathExpressionException {
 			String journal = XMLUtils.evaluateString(xPath, doc);
 			addField(luceneDoc, journal);
 		}
@@ -233,7 +233,7 @@ public enum PubMedIndexField {
 	
 	AUTHOR("author", "/PubmedArticle/MedlineCitation/Article/AuthorList/Author/*[name() = 'ForeName' or name() = 'LastName']") {
 		@Override
-		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException, DOMException {
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths, String openLicense) throws XPathExpressionException, DOMException {
 			for (Element author : XMLUtils.evaluateElements(xPath, doc)) {
 				String authorName = author.getTextContent();
 				addField(luceneDoc, authorName);
@@ -255,10 +255,32 @@ public enum PubMedIndexField {
 			return false;
 		}
 	},
+	
+	OPEN_LICENSE("open-license") {
+		@Override
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths, String openLicense) throws XPathExpressionException, TransformerException {
+			addField(luceneDoc, openLicense);
+		}
+
+		@Override
+		protected Analyzer getAnalyzer() {
+			return new KeywordAnalyzer();
+		}
+
+		@Override
+		public boolean isIndexed() {
+			return true;
+		}
+
+		@Override
+		public boolean isStored() {
+			return true;
+		}
+	},
 
 	DATE_REVISED("date-revised", "/PubmedArticle/MedlineCitation/DateRevised") {
 		@Override
-		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException, TransformerException {
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths, String openLicense) throws XPathExpressionException, TransformerException {
 			Element dateRevised = XMLUtils.evaluateElement(xPath, doc);
 			String fieldValue = getFieldValue(dateRevised);
 			addField(luceneDoc, fieldValue);
@@ -319,7 +341,7 @@ public enum PubMedIndexField {
 	
 	SOURCE("source") {
 		@Override
-		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException {
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths, String openLicense) throws XPathExpressionException {
 			addField(luceneDoc, source);
 		}
 
@@ -341,7 +363,7 @@ public enum PubMedIndexField {
 
 	XML("xml") {
 		@Override
-		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws TransformerException {
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths, String openLicense) throws TransformerException {
 			StringWriter sw = new StringWriter();
 			Source xslSource = new DOMSource(doc);
 			Result xslResult = new StreamResult(sw);
@@ -388,7 +410,7 @@ public enum PubMedIndexField {
 		this.xPath = null;
 	}
 
-	protected abstract void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths) throws XPathExpressionException, TransformerException;
+	protected abstract void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths, String openLicense) throws XPathExpressionException, TransformerException;
 	
 	protected abstract Analyzer getAnalyzer();
 	

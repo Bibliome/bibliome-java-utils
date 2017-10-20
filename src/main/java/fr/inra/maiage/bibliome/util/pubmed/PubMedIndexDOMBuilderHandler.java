@@ -26,14 +26,16 @@ public class PubMedIndexDOMBuilderHandler extends DOMBuilderHandler {
 
 	private final IndexWriter indexWriter;
 	private final Map<String,String> meshPaths;
+	private final Map<String,String> openLicenses;
 	private String source = "";
 	private int updatedCitationsCount = 0;
 	private int deletedCitationsCount = 0;
 	
-	public PubMedIndexDOMBuilderHandler(DocumentBuilder docBuilder, IndexWriter indexWriter, Map<String,String> meshPaths) {
+	public PubMedIndexDOMBuilderHandler(DocumentBuilder docBuilder, IndexWriter indexWriter, Map<String,String> meshPaths, Map<String,String> openLicenses) {
 		super(docBuilder);
 		this.indexWriter = indexWriter;
 		this.meshPaths = meshPaths;
+		this.openLicenses = openLicenses;
 	}
 
 	public void setSource(String source) {
@@ -89,9 +91,10 @@ public class PubMedIndexDOMBuilderHandler extends DOMBuilderHandler {
 	private void updateCitation(Document doc) throws XPathExpressionException, CorruptIndexException, IOException, TransformerException {
 		updatedCitationsCount++;
 		String pmid = XMLUtils.evaluateString(PubMedIndexField.PMID.xPath, doc);
+		String openLicense = openLicenses.get(pmid);
 		org.apache.lucene.document.Document luceneDoc = new org.apache.lucene.document.Document();
 		for (PubMedIndexField field : PubMedIndexField.values()) {
-			field.addFields(luceneDoc, doc, source, meshPaths);
+			field.addFields(luceneDoc, doc, source, meshPaths, openLicense);
 		}
 		Term term = new Term(PubMedIndexField.PMID.fieldName, pmid);
 		indexWriter.updateDocument(term, luceneDoc);
