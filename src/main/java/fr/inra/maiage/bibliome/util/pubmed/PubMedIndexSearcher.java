@@ -236,7 +236,7 @@ public class PubMedIndexSearcher extends CLIOParser {
 		String outputPath = String.format(outputFormat, batch);
 		OutputFile outputFile = new OutputFile(outputBaseDir, outputPath);
 		TargetStream target = new FileTargetStream("UTF-8", outputFile);
-		PubMedIndexUtils.log("writing to %s", outputPath);
+		PubMedIndexUtils.log("writing to %s", outputFile.getAbsolutePath());
 		return target.getPrintStream();
 	}
 
