@@ -51,7 +51,7 @@ public enum PubMedIndexField {
 			return true;
 		}
 	},
-	
+
 	DOI("doi", "/PubmedArticle/PubmedData/ArticleIdList/ArticleId[@IdType = 'doi']") {
 		@Override
 		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String, String> meshPaths, String openLicense) throws XPathExpressionException, TransformerException {
@@ -74,7 +74,53 @@ public enum PubMedIndexField {
 			return true;
 		}
 	},
-	
+
+	PII("pii", "/PubmedArticle/PubmedData/ArticleIdList/ArticleId[@IdType = 'pii']") {
+		@Override
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String, String> meshPaths, String openLicense) throws XPathExpressionException, TransformerException {
+			String pii = XMLUtils.evaluateString(xPath, doc);
+			addField(luceneDoc, pii);
+		}
+
+		@Override
+		protected Analyzer getAnalyzer() {
+			return new KeywordAnalyzer();
+		}
+
+		@Override
+		public boolean isIndexed() {
+			return true;
+		}
+
+		@Override
+		public boolean isStored() {
+			return true;
+		}
+	},
+
+	PMC("pmc", "/PubmedArticle/PubmedData/ArticleIdList/ArticleId[@IdType = 'pmc']") {
+		@Override
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String, String> meshPaths, String openLicense) throws XPathExpressionException, TransformerException {
+			String pmc = XMLUtils.evaluateString(xPath, doc);
+			addField(luceneDoc, pmc);
+		}
+
+		@Override
+		protected Analyzer getAnalyzer() {
+			return new KeywordAnalyzer();
+		}
+
+		@Override
+		public boolean isIndexed() {
+			return true;
+		}
+
+		@Override
+		public boolean isStored() {
+			return true;
+		}
+	},
+
 	MESH_ID("mesh-id", "/PubmedArticle/MedlineCitation/MeshHeadingList/MeshHeading/DescriptorName") {
 		@Override
 		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths, String openLicense) throws XPathExpressionException {
@@ -176,12 +222,62 @@ public enum PubMedIndexField {
 		}
 	},
 	
+	SUBSTANCE("substance", "/PubmedArticle/MedlineCitation/ChemcalList/Chemical/NameOfSubstance") {
+		@Override
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths, String openLicense) throws XPathExpressionException, TransformerException {
+			for (Element substance : XMLUtils.evaluateElements(xPath, doc)) {
+				String substanceId = substance.getAttribute("UI");
+				addField(luceneDoc, substanceId);
+			}
+		}
+
+		@Override
+		protected Analyzer getAnalyzer() {
+			return new KeywordAnalyzer();
+		}
+
+		@Override
+		public boolean isIndexed() {
+			return true;
+		}
+
+		@Override
+		public boolean isStored() {
+			return false;
+		}
+	},
+
+	PUBLICATION_TYPE("type", "/PubmedArticle/MedlineCitation/Article/PublicationTypeList/PublicationType") {
+		@Override
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths, String openLicense) throws XPathExpressionException, TransformerException {
+			for (Element type : XMLUtils.evaluateElements(xPath, doc)) {
+				String typeId = type.getAttribute("UI");
+				addField(luceneDoc, typeId);
+			}
+		}
+
+		@Override
+		protected Analyzer getAnalyzer() {
+			return new KeywordAnalyzer();
+		}
+
+		@Override
+		public boolean isIndexed() {
+			return true;
+		}
+
+		@Override
+		public boolean isStored() {
+			return false;
+		}
+	},
+	
 	LANGUAGE("lang", "/PubmedArticle/MedlineCitation/Article/Language") {
 		@Override
 		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths, String openLicense) throws XPathExpressionException, TransformerException {
 			for (Element lang : XMLUtils.evaluateElements(xPath, doc)) {
-				String absText = lang.getTextContent();
-				addField(luceneDoc, absText);
+				String langText = lang.getTextContent();
+				addField(luceneDoc, langText);
 			}
 		}
 
@@ -215,6 +311,29 @@ public enum PubMedIndexField {
 				return m.group();
 			}
 			return null;
+		}
+
+		@Override
+		protected Analyzer getAnalyzer() {
+			return new KeywordAnalyzer();
+		}
+
+		@Override
+		public boolean isIndexed() {
+			return true;
+		}
+
+		@Override
+		public boolean isStored() {
+			return false;
+		}
+	},
+
+	ISSN("issn", "/PubmedArticle/MedlineCitation/Article/Journal/ISSN") {
+		@Override
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths, String openLicense) throws XPathExpressionException, TransformerException {
+			String issn = XMLUtils.evaluateString(xPath, doc);
+			addField(luceneDoc, issn);
 		}
 
 		@Override
