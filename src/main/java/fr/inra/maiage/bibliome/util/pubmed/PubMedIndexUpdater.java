@@ -42,7 +42,7 @@ public class PubMedIndexUpdater extends CLIOParser {
 	public static final Pattern PUBMED_FILENAME_PATTERN = Pattern.compile("medline\\d+n\\d+\\.xml(?:\\.gz)?");
 	private static final String LOCATION_PUBMED_BASELINE = "ftp://ftp.ncbi.nlm.nih.gov/pubmed/baseline/";
 	private static final String LOCATION_PUBMED_UPDATEFILES = "ftp://ftp.ncbi.nlm.nih.gov/pubmed/updatefiles/";
-	private static final String LOCATION_PUBMED_OPEN = "";
+	private static final String LOCATION_PUBMED_OPEN = "ftp://ftp.ncbi.nlm.nih.gov/pub/pmc/oa_file_list.txt";
 
 	private static class PubMedFileFilter implements FileFilter {
 		private PubmedIndexProperties properties = null;
@@ -145,7 +145,7 @@ public class PubMedIndexUpdater extends CLIOParser {
 					break;
 				}
 				List<String> cols = Strings.split(line, '\t', -1);
-				String pmid = cols.get(5);
+				String pmid = cols.get(3);
 				if (pmid.isEmpty()) {
 					continue;
 				}
@@ -153,7 +153,7 @@ public class PubMedIndexUpdater extends CLIOParser {
 					continue;
 				}
 				pmid = pmid.substring(5);
-				String license = cols.get(6);
+				String license = cols.get(4);
 				openLicenses.put(pmid, license);
 			}
 		}
