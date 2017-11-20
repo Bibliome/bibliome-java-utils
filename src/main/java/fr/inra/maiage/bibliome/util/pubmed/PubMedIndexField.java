@@ -175,6 +175,31 @@ public enum PubMedIndexField {
 			return false;
 		}
 	},
+	
+	LANGUAGE("lang", "/PubmedArticle/MedlineCitation/Article/Language") {
+		@Override
+		protected void addFields(org.apache.lucene.document.Document luceneDoc, Document doc, String source, Map<String,String> meshPaths, String openLicense) throws XPathExpressionException, TransformerException {
+			for (Element lang : XMLUtils.evaluateElements(xPath, doc)) {
+				String absText = lang.getTextContent();
+				addField(luceneDoc, absText);
+			}
+		}
+
+		@Override
+		protected Analyzer getAnalyzer() {
+			return new KeywordAnalyzer();
+		}
+
+		@Override
+		public boolean isIndexed() {
+			return true;
+		}
+
+		@Override
+		public boolean isStored() {
+			return false;
+		}
+	},
 
 	YEAR("year", "/PubmedArticle/MedlineCitation/Article/Journal/JournalIssue/PubDate/*[name() = 'Year' or name() = 'MedlineDate']") {
 		@Override
