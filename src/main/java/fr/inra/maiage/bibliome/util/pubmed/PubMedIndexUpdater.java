@@ -138,11 +138,16 @@ public class PubMedIndexUpdater extends CLIOParser {
 	public void indexOpenAccessStatus() throws IOException, URISyntaxException {
 		PubMedIndexUtils.log("downloading open access list: %s", LOCATION_PUBMED_OPEN);
 		SourceStream source = streamFactory.getSourceStream(LOCATION_PUBMED_OPEN);
+		boolean firstLine = true;
 		try (BufferedReader r = source.getBufferedReader()) {
 			while (true) {
 				String line = r.readLine();
 				if (line == null) {
 					break;
+				}
+				if (firstLine) {
+					firstLine = false; // skip first line that contains a date
+					continue;
 				}
 				List<String> cols = Strings.split(line, '\t', -1);
 				String pmid = cols.get(3);
