@@ -120,7 +120,7 @@ public abstract class AbstractFile extends File implements Checkable {
 				return f;
 			}
 		}
-		return file;
+		return ff.createFile(inputDirs.get(0), path);
 	}
 	
 	public static <T extends File> T getOutputFile(FileFactory<T> ff, String outputDir, String path) {
