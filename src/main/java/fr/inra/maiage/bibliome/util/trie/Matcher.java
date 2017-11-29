@@ -66,9 +66,11 @@ public class Matcher<T> {
 	 * @return the successful matches.
 	 */
 	public List<Match<T>> finish(int pos) {
-		for (Match<T> m : candidates)
+		for (Match<T> m : candidates) {
+			//System.err.println("m = " + m);
 			if (m.getState().isKey() && m.isMatched())
 				matches.add(m.finish(pos));
+		}
 		return matches;
 	}
 
@@ -112,6 +114,7 @@ public class Matcher<T> {
 			if (cc == mcc) {
 				if (m.isMatched()) {
 					Match<T> n = m.spawn(t);
+					n.setMatched(true);
 					lit.add(n);
 				}
 				else {
@@ -129,7 +132,7 @@ public class Matcher<T> {
 		//prec = this.c;
 		this.c = c;
 		cc = control.canonize(prec, c);
-		skipSearch  = control.skipSearch(prec, c);
+		skipSearch = control.skipSearch(prec, c);
 	}
 
 	/**
@@ -139,10 +142,12 @@ public class Matcher<T> {
 	 */
 	public void matchChar(int pos, char c) {
 		setChar(c);
-		if (control.canEnd(prec, c))
+		if (control.canEnd(prec, c)) {
+			//System.err.format("can end: %d - %d - %c\n", pos, prec, c);
 			finish(pos);
+		}
 		if (control.canStart(prec, c)) {
-//			System.err.format("can start: %d - %d - %c\n", pos, prec, c);
+			//System.err.format("can start: %d - %d - %c\n", pos, prec, c);
 			start(pos);
 		}
 		match();

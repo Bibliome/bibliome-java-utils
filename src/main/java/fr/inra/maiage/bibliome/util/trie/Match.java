@@ -87,4 +87,9 @@ public class Match<T> {
 	void setMatched(boolean matched) {
 		this.matched = matched;
 	}
+
+	@Override
+	public String toString() {
+		return "Match [start=" + start + ", end=" + end + ", state=" + state + " [" + ((char) state.getChar()) + "], matched=" + matched + "]";
+	}
 }
