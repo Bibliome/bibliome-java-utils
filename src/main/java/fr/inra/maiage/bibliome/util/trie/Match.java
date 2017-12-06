@@ -25,13 +25,15 @@ import java.util.List;
  * @param <T>
  */
 public class Match<T> {
+	private Match<T> original;
 	private final int start;
 	private final int end;
 	private State<T> state;
 	private boolean matched = false;
 	
-	private Match(int start, int end, State<T> state) {
+	private Match(Match<T> original, int start, int end, State<T> state) {
 		super();
+		this.original = original == null ? this : original;
 		if (state == null)
 			throw new NullPointerException();
 		this.start = start;
@@ -40,7 +42,7 @@ public class Match<T> {
 	}
 	
 	Match(int start, State<T> state) {
-		this(start, -1, state);
+		this(null, start, -1, state);
 	}
 
 	Match<T> spawn(State<T> state) {
@@ -68,15 +70,23 @@ public class Match<T> {
 		return state.getValues();
 	}
 	
+	public Match<T> getOriginal() {
+		return original;
+	}
+
+	public void setOriginal(Match<T> original) {
+		this.original = original;
+	}
+
 	Match<T> finish(int end) {
-		return new Match<T>(start, end, state);
+		return new Match<T>(original, start, end, state);
 	}
 	
-	State<T> getState() {
+	public State<T> getState() {
 		return state;
 	}
 	
-	void setState(State<T> state) {
+	public void setState(State<T> state) {
 		this.state = state;
 	}
 

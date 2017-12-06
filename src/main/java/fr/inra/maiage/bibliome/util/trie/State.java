@@ -24,7 +24,7 @@ import java.util.List;
 import fr.inra.maiage.bibliome.util.Iterators;
 import fr.inra.maiage.bibliome.util.marshall.MReference;
 
-class State<T> implements MReference<State<T>> {
+public class State<T> implements MReference<State<T>> {
 	private final int c;
 	private final State<T> nextSibling;
 	private MReference<State<T>> firstTransition;

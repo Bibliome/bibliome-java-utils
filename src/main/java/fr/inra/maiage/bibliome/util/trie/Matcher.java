@@ -17,6 +17,8 @@ limitations under the License.
 package fr.inra.maiage.bibliome.util.trie;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -59,7 +61,14 @@ public class Matcher<T> {
 		candidates.clear();
 		prec = -1;
 	}
-
+	
+	public Collection<Match<T>> setCandidates(Collection<Match<T>> candidates) {
+		Collection<Match<T>> result = new ArrayList<Match<T>>(this.candidates);
+		this.candidates.clear();
+		this.candidates.addAll(candidates);
+		return result;
+	}
+	
 	/**
 	 * Terminates a search.
 	 * @param pos
@@ -184,5 +193,9 @@ public class Matcher<T> {
 	 */
 	public Trie<T> getTrie() {
 		return trie;
+	}
+
+	public List<Match<T>> getCandidates() {
+		return Collections.unmodifiableList(candidates);
 	}
 }
