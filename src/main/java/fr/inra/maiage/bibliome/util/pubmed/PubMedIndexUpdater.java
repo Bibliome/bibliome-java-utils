@@ -128,6 +128,7 @@ public class PubMedIndexUpdater extends CLIOParser {
 	public void addMeSHRootsXML(String meshTreeLocation) throws SAXException, IOException, ParserConfigurationException {
 		SAXParserFactory spf = SAXParserFactory.newInstance();
 		SAXParser parser = spf.newSAXParser();
+		PubMedIndexUtils.log("reading MeSH descriptors from %s", meshTreeLocation);
 		parser.parse(meshTreeLocation, meshTreeHandler);
 	}
 	
