@@ -43,7 +43,7 @@ import fr.inra.maiage.bibliome.util.streams.StreamFactory;
 import fr.inra.maiage.bibliome.util.xml.XMLUtils;
 
 public class PubMedIndexUpdater extends CLIOParser {
-	public static final Pattern PUBMED_FILENAME_PATTERN = Pattern.compile("medline\\d+n\\d+\\.xml(?:\\.gz)?");
+	public static final Pattern PUBMED_FILENAME_PATTERN = Pattern.compile("pubmed\\d+n\\d+\\.xml(?:\\.gz)?");
 	private static final String LOCATION_PUBMED_BASELINE = "ftp://ftp.ncbi.nlm.nih.gov/pubmed/baseline/";
 	private static final String LOCATION_PUBMED_UPDATEFILES = "ftp://ftp.ncbi.nlm.nih.gov/pubmed/updatefiles/";
 	private static final String LOCATION_PUBMED_OPEN = "ftp://ftp.ncbi.nlm.nih.gov/pub/pmc/oa_file_list.txt";
