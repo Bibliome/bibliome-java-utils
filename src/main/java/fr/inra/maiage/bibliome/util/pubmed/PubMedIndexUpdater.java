@@ -25,13 +25,17 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 import fr.inra.maiage.bibliome.util.Iterators;
 import fr.inra.maiage.bibliome.util.Strings;
 import fr.inra.maiage.bibliome.util.clio.CLIOException;
 import fr.inra.maiage.bibliome.util.clio.CLIOParser;
 import fr.inra.maiage.bibliome.util.clio.CLIOption;
+import fr.inra.maiage.bibliome.util.defaultmap.DefaultArrayListHashMap;
+import fr.inra.maiage.bibliome.util.defaultmap.DefaultMap;
 import fr.inra.maiage.bibliome.util.streams.CollectionSourceStream;
 import fr.inra.maiage.bibliome.util.streams.CompressionFilter;
 import fr.inra.maiage.bibliome.util.streams.SourceStream;
@@ -67,7 +71,7 @@ public class PubMedIndexUpdater extends CLIOParser {
 	private final StreamFactory streamFactory = new StreamFactory();
 	private File indexDir;
 	private final Collection<SourceStream> sources = new ArrayList<SourceStream>();
-	private final Map<String,String> meshPaths = new HashMap<String,String>();
+	private final DefaultMap<String,List<String>> meshPaths = new DefaultArrayListHashMap<String,String>();
 	private final Map<String,String> openLicenses = new HashMap<String,String>();
 
 	public PubMedIndexUpdater() {
@@ -115,10 +119,67 @@ public class PubMedIndexUpdater extends CLIOParser {
 				String rest = line.substring(tab + 1);
 				tab = rest.indexOf('\t');
 				String meshId = rest.substring(0, tab);
-				meshPaths.put(meshId, meshPath);
+				meshPaths.safeGet(meshId).add(meshPath);
 			}
 		}
 	}
+	
+	@CLIOption("-mesh-tree-xml")
+	public void addMeSHRootsXML(String meshTreeLocation) throws SAXException, IOException, ParserConfigurationException {
+		SAXParserFactory spf = SAXParserFactory.newInstance();
+		SAXParser parser = spf.newSAXParser();
+		parser.parse(meshTreeLocation, meshTreeHandler);
+	}
+	
+	private final DefaultHandler meshTreeHandler = new DefaultHandler() {
+		private String ui = null;
+		private boolean inDescriptorUI = false;
+		private boolean inTreeNumber = false;
+		
+		@Override
+		public void endDocument() throws SAXException {
+			super.endDocument();
+			ui = null;
+			inDescriptorUI = false;
+			inTreeNumber = false;
+		}
+
+		@Override
+		public void startDocument() throws SAXException {
+			super.startDocument();
+			ui = null;
+			inDescriptorUI = false;
+			inTreeNumber = false;
+		}
+
+		@Override
+		public void characters(char[] ch, int start, int length) throws SAXException {
+			super.characters(ch, start, length);
+			if (inDescriptorUI) {
+				ui = new String(ch, start, length);
+			}
+			if (inTreeNumber) {
+				String path = new String(ch, start, length);
+				meshPaths.safeGet(ui).add(path);
+			}
+		}
+		
+		@Override
+		public void endElement(String uri, String localName, String qName) throws SAXException {
+			super.endElement(uri, localName, qName);
+			inDescriptorUI = false;
+			inTreeNumber = false;
+		}
+		
+		@Override
+		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+			super.startElement(uri, localName, qName, attributes);
+			switch (qName) {
+			case "DescriptorUI": inDescriptorUI = true; break;
+			case "TreeNumber": inTreeNumber = true; break;
+			}
+		}
+	};
 
 	@CLIOption("-baseline")
 	public void downloadBaseline() throws MalformedURLException, IOException {

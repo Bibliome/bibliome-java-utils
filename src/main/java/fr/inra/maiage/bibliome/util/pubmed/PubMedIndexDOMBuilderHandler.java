@@ -2,6 +2,7 @@ package fr.inra.maiage.bibliome.util.pubmed;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -25,13 +26,13 @@ public class PubMedIndexDOMBuilderHandler extends DOMBuilderHandler {
 	public static final String TAG_DELETE = "DeleteCitation";
 
 	private final IndexWriter indexWriter;
-	private final Map<String,String> meshPaths;
+	private final Map<String,List<String>> meshPaths;
 	private final Map<String,String> openLicenses;
 	private String source = "";
 	private int updatedCitationsCount = 0;
 	private int deletedCitationsCount = 0;
 	
-	public PubMedIndexDOMBuilderHandler(DocumentBuilder docBuilder, IndexWriter indexWriter, Map<String,String> meshPaths, Map<String,String> openLicenses) {
+	public PubMedIndexDOMBuilderHandler(DocumentBuilder docBuilder, IndexWriter indexWriter, Map<String,List<String>> meshPaths, Map<String,String> openLicenses) {
 		super(docBuilder);
 		this.indexWriter = indexWriter;
 		this.meshPaths = meshPaths;
