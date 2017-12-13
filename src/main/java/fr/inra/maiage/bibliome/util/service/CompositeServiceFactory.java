@@ -32,6 +32,10 @@ public abstract class CompositeServiceFactory<K,S,F extends ServiceFactory<K,S>>
     private final Map<K,F> factories = new HashMap<K,F>();
     private final Map<String,List<K>> aliases = new HashMap<String,List<K>>();
 
+    public Collection<F> getFactories() {
+    	return Collections.unmodifiableCollection(factories.values());
+    }
+    
     /**
      * Adds a compound factory.
      * @param factory
