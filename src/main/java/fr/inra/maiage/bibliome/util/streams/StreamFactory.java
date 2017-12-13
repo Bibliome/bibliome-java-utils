@@ -26,6 +26,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import fr.inra.maiage.bibliome.util.Strings;
@@ -40,6 +41,7 @@ public class StreamFactory {
 	private boolean recursive = false;
 	private FileFilter filter = AcceptAllFiles.INSTANCE;
 	private List<String> inputDirs = null;
+	private List<String> resourceBases = Collections.emptyList();
 
 	public StreamFactory() {
 	}
@@ -62,6 +64,14 @@ public class StreamFactory {
 
 	public List<String> getInputDirs() {
 		return inputDirs;
+	}
+
+	public List<String> getResourceBases() {
+		return resourceBases;
+	}
+
+	public void setResourceBases(List<String> resourceBases) {
+		this.resourceBases = resourceBases;
 	}
 
 	public void setInputDirs(List<String> inputDirs) {
@@ -130,7 +140,7 @@ public class StreamFactory {
 	}
 	
 	public ResourceSourceStream getResourceSourceStream(String name) {
-		return new ResourceSourceStream(charset, compressionFilter, name);
+		return new ResourceSourceStream(charset, compressionFilter, resourceBases, name);
 	}
 
 	public CollectionSourceStream getSourceStreamList(String path) throws IOException, URISyntaxException {
@@ -191,7 +201,7 @@ public class StreamFactory {
 				return getDirectorySourceStream(uri.getPath());
 			case "resource":
 			case "res":
-				return getResourceSourceStream(uriToResourceName(uri));
+				return getResourceSourceStream(uri.getAuthority() + uri.getPath());
 			case "list":
 				return getSourceStreamList(uri.getPath());
 			case "stream":

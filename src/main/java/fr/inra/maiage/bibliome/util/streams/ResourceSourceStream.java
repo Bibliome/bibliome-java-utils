@@ -21,21 +21,43 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class ResourceSourceStream extends AbstractSingleSourceStream {
 	private final String name;
 	private final URL url;
 
-	public ResourceSourceStream(String charset, CompressionFilter compressionFilter, String name) {
+	public ResourceSourceStream(String charset, CompressionFilter compressionFilter, List<String> bases, String name) {
 		super(charset, compressionFilter);
 		this.name = name;
 		Class<?> klass = getClass();
 		ClassLoader classLoader = klass.getClassLoader();
-		url = classLoader.getResource(name);
-		if (url == null) {
-			throw new RuntimeException("resource " + name + " not found");
+		url = searchResource(classLoader, bases, name);
+	}
+
+	private static URL searchResource(ClassLoader classLoader, List<String> bases, String name) {
+		URL raw = classLoader.getResource(name);
+		if (raw != null) {
+			return raw;
 		}
+		if (bases != null) {
+			for (String base : bases) {
+				String full = appendResourceName(base, name);
+				URL url = classLoader.getResource(full);
+				if (url != null) {
+					return url;
+				}
+			}
+		}
+		throw new RuntimeException("resource " + name + " not found");
+	}
+	
+	private static String appendResourceName(String base, String name) {
+		if (base.charAt(base.length() - 1) == '/') {
+			return base + name;
+		}
+		return base + '/' + name;
 	}
 
 	@Override
