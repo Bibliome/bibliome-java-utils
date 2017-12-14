@@ -176,8 +176,18 @@ public class PubMedIndexUpdater extends CLIOParser {
 		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 			super.startElement(uri, localName, qName, attributes);
 			switch (qName) {
-			case "DescriptorUI": inDescriptorUI = true; break;
-			case "TreeNumber": inTreeNumber = true; break;
+			case "DescriptorRecord": {
+				ui = null;
+				break;
+			}
+			case "DescriptorUI": {
+				inDescriptorUI = (ui == null);
+				break;
+			}
+			case "TreeNumber": {
+				inTreeNumber = true;
+				break;
+			}
 			}
 		}
 	};
