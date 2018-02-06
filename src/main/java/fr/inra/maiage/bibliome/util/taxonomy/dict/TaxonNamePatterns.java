@@ -133,6 +133,55 @@ enum TaxonNamePatterns implements TaxonNamePattern {
 		}
 	},
 	
+	SPECIES_TAXID(false) {
+		@Override
+		public void appendValue(Logger logger, Taxon taxon, Name name, String pathSeparator, Appendable target) throws IOException {
+			appendAncestorOfRank(taxon, "species", target);
+		}
+	},
+	
+	GENUS_TAXID(false) {
+		@Override
+		public void appendValue(Logger logger, Taxon taxon, Name name, String pathSeparator, Appendable target) throws IOException {
+			appendAncestorOfRank(taxon, "genus", target);
+		}
+	},
+	
+	FAMILY_TAXID(false) {
+		@Override
+		public void appendValue(Logger logger, Taxon taxon, Name name, String pathSeparator, Appendable target) throws IOException {
+			appendAncestorOfRank(taxon, "family", target);
+		}
+	},
+	
+	ORDER_TAXID(false) {
+		@Override
+		public void appendValue(Logger logger, Taxon taxon, Name name, String pathSeparator, Appendable target) throws IOException {
+			appendAncestorOfRank(taxon, "order", target);
+		}
+	},
+	
+	CLASS_TAXID(false) {
+		@Override
+		public void appendValue(Logger logger, Taxon taxon, Name name, String pathSeparator, Appendable target) throws IOException {
+			appendAncestorOfRank(taxon, "class", target);
+		}
+	},
+	
+	PHYLUM_TAXID(false) {
+		@Override
+		public void appendValue(Logger logger, Taxon taxon, Name name, String pathSeparator, Appendable target) throws IOException {
+			appendAncestorOfRank(taxon, "phylum", target);
+		}
+	},
+	
+	KINGDOM_TAXID(false) {
+		@Override
+		public void appendValue(Logger logger, Taxon taxon, Name name, String pathSeparator, Appendable target) throws IOException {
+			appendAncestorOfRank(taxon, "kingdom", target);
+		}
+	},
+
 	POS_TAG(true) {
 		@Override
 		public void appendValue(Logger logger, Taxon taxon, Name name, String pathSeparator, Appendable target) throws IOException {
@@ -164,5 +213,12 @@ enum TaxonNamePatterns implements TaxonNamePattern {
 	@Override
 	public boolean isNameRequired() {
 		return nameRequired;
+	}
+
+	protected static void appendAncestorOfRank(Taxon taxon, String rank, Appendable target) throws IOException {
+		Taxon ancestor = taxon.getAncestorOfRank(rank, true);
+		if (ancestor != null) {
+			target.append(Integer.toString(ancestor.getTaxid()));
+		}
 	}
 }

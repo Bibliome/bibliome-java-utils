@@ -238,4 +238,13 @@ public class Taxon {
 			throw new RuntimeException("two canonical names for taxid " + taxid);
 		canonicalName = name;
 	}
+	
+	public Taxon getAncestorOfRank(String rank, boolean includeSelf) {
+		for (Taxon taxon = includeSelf ? this : parent; taxon != null; taxon = taxon.parent) {
+			if (rank.equals(taxon.getRank())) {
+				return taxon;
+			}
+		}
+		return null;
+	}
 }
