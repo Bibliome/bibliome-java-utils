@@ -43,6 +43,28 @@ enum TaxonNamePatterns implements TaxonNamePattern {
 			target.append(Integer.toString(taxon.getTaxid()));
 		}
 	},
+
+	POS_TAG(true) {
+		@Override
+		public void appendValue(Logger logger, Taxon taxon, Name name, String pathSeparator, Appendable target) throws IOException {
+			if ("blast name".equals(name.type))
+				target.append("NNS");
+			else if ("in-part".equals(name.type))
+				target.append("NP"); // could be NNS
+			else if ("misnomer".equals(name.type))
+				target.append("NP"); // could be NN
+			else if ("includes".equals(name.type))
+				target.append("NP"); // has mixed names
+			else if ("misspelling".equals(name.type))
+				target.append("NP"); // has mixed names
+			else if ("common name".equals(name.type))
+				target.append("NN"); // has mixed names
+			else if ("genbank common name".equals(name.type))
+				target.append("NN"); // has mixed names
+			else
+				target.append("NP");
+		}
+	},
 	
 	RANK(false) {
 		@Override
@@ -136,71 +158,98 @@ enum TaxonNamePatterns implements TaxonNamePattern {
 	SPECIES_TAXID(false) {
 		@Override
 		public void appendValue(Logger logger, Taxon taxon, Name name, String pathSeparator, Appendable target) throws IOException {
-			appendAncestorOfRank(taxon, "species", target);
+			appendAncestorIdOfRank(taxon, "species", target);
 		}
 	},
 	
 	GENUS_TAXID(false) {
 		@Override
 		public void appendValue(Logger logger, Taxon taxon, Name name, String pathSeparator, Appendable target) throws IOException {
-			appendAncestorOfRank(taxon, "genus", target);
+			appendAncestorIdOfRank(taxon, "genus", target);
 		}
 	},
 	
 	FAMILY_TAXID(false) {
 		@Override
 		public void appendValue(Logger logger, Taxon taxon, Name name, String pathSeparator, Appendable target) throws IOException {
-			appendAncestorOfRank(taxon, "family", target);
+			appendAncestorIdOfRank(taxon, "family", target);
 		}
 	},
 	
 	ORDER_TAXID(false) {
 		@Override
 		public void appendValue(Logger logger, Taxon taxon, Name name, String pathSeparator, Appendable target) throws IOException {
-			appendAncestorOfRank(taxon, "order", target);
+			appendAncestorIdOfRank(taxon, "order", target);
 		}
 	},
 	
 	CLASS_TAXID(false) {
 		@Override
 		public void appendValue(Logger logger, Taxon taxon, Name name, String pathSeparator, Appendable target) throws IOException {
-			appendAncestorOfRank(taxon, "class", target);
+			appendAncestorIdOfRank(taxon, "class", target);
 		}
 	},
 	
 	PHYLUM_TAXID(false) {
 		@Override
 		public void appendValue(Logger logger, Taxon taxon, Name name, String pathSeparator, Appendable target) throws IOException {
-			appendAncestorOfRank(taxon, "phylum", target);
+			appendAncestorIdOfRank(taxon, "phylum", target);
 		}
 	},
 	
 	KINGDOM_TAXID(false) {
 		@Override
 		public void appendValue(Logger logger, Taxon taxon, Name name, String pathSeparator, Appendable target) throws IOException {
-			appendAncestorOfRank(taxon, "kingdom", target);
+			appendAncestorIdOfRank(taxon, "kingdom", target);
 		}
 	},
-
-	POS_TAG(true) {
+	
+	SPECIES_NAME(false) {
 		@Override
 		public void appendValue(Logger logger, Taxon taxon, Name name, String pathSeparator, Appendable target) throws IOException {
-			if ("blast name".equals(name.type))
-				target.append("NNS");
-			else if ("in-part".equals(name.type))
-				target.append("NP"); // could be NNS
-			else if ("misnomer".equals(name.type))
-				target.append("NP"); // could be NN
-			else if ("includes".equals(name.type))
-				target.append("NP"); // has mixed names
-			else if ("misspelling".equals(name.type))
-				target.append("NP"); // has mixed names
-			else if ("common name".equals(name.type))
-				target.append("NN"); // has mixed names
-			else if ("genbank common name".equals(name.type))
-				target.append("NN"); // has mixed names
-			else
-				target.append("NP");
+			appendAncestorNameOfRank(taxon, "species", target);
+		}
+	},
+	
+	GENUS_NAME(false) {
+		@Override
+		public void appendValue(Logger logger, Taxon taxon, Name name, String pathSeparator, Appendable target) throws IOException {
+			appendAncestorNameOfRank(taxon, "genus", target);
+		}
+	},
+	
+	FAMILY_NAME(false) {
+		@Override
+		public void appendValue(Logger logger, Taxon taxon, Name name, String pathSeparator, Appendable target) throws IOException {
+			appendAncestorNameOfRank(taxon, "family", target);
+		}
+	},
+	
+	ORDER_NAME(false) {
+		@Override
+		public void appendValue(Logger logger, Taxon taxon, Name name, String pathSeparator, Appendable target) throws IOException {
+			appendAncestorNameOfRank(taxon, "order", target);
+		}
+	},
+	
+	CLASS_NAME(false) {
+		@Override
+		public void appendValue(Logger logger, Taxon taxon, Name name, String pathSeparator, Appendable target) throws IOException {
+			appendAncestorNameOfRank(taxon, "class", target);
+		}
+	},
+	
+	PHYLUM_NAME(false) {
+		@Override
+		public void appendValue(Logger logger, Taxon taxon, Name name, String pathSeparator, Appendable target) throws IOException {
+			appendAncestorNameOfRank(taxon, "phylum", target);
+		}
+	},
+	
+	KINGDOM_NAME(false) {
+		@Override
+		public void appendValue(Logger logger, Taxon taxon, Name name, String pathSeparator, Appendable target) throws IOException {
+			appendAncestorNameOfRank(taxon, "kingdom", target);
 		}
 	};
 	
@@ -215,10 +264,17 @@ enum TaxonNamePatterns implements TaxonNamePattern {
 		return nameRequired;
 	}
 
-	protected static void appendAncestorOfRank(Taxon taxon, String rank, Appendable target) throws IOException {
+	protected static void appendAncestorIdOfRank(Taxon taxon, String rank, Appendable target) throws IOException {
 		Taxon ancestor = taxon.getAncestorOfRank(rank, true);
 		if (ancestor != null) {
 			target.append(Integer.toString(ancestor.getTaxid()));
+		}
+	}
+
+	protected static void appendAncestorNameOfRank(Taxon taxon, String rank, Appendable target) throws IOException {
+		Taxon ancestor = taxon.getAncestorOfRank(rank, true);
+		if (ancestor != null) {
+			target.append(ancestor.getCanonicalName());
 		}
 	}
 }

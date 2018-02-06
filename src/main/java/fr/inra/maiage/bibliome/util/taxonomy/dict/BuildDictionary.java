@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -174,6 +176,19 @@ public class BuildDictionary extends CLIOParser {
 	@CLIOption(value="-help", stop=true)
 	public void help() {
 		System.out.println(usage());
+		ResourceBundle bundle = ResourceBundle.getBundle(getResourceBundleName(), Locale.getDefault());
+		System.out.println("Pattern elements:");
+		for (TaxonNamePattern pat : TaxonNamePatterns.values()) {
+			System.out.print("    ");
+			String patName = pat.toString();
+			System.out.print(patName);
+			for (int i = 25 - patName.length(); i > 0; --i) {
+				System.out.print(' ');
+			}
+			String descr = bundle.getString(patName);
+			System.out.println(descr);
+		}
+		System.out.println();
 	}
 	
 	private static char escapeOf(char c) {
