@@ -27,3 +27,4 @@ fi
 ./make-java-launcher.sh "$LIB_DIR" "$BIN_DIR"/select-pubmed          fr.inra.maiage.bibliome.util.pubmed.PubMedSelect
 ./make-java-launcher.sh "$LIB_DIR" "$BIN_DIR"/pubmed-index           fr.inra.maiage.bibliome.util.pubmed.PubMedIndexUpdater
 ./make-java-launcher.sh "$LIB_DIR" "$BIN_DIR"/pubmed-search          fr.inra.maiage.bibliome.util.pubmed.PubMedIndexSearcher
+./make-java-launcher.sh "$LIB_DIR" "$BIN_DIR"/aggregate-table        fr.inra.maiage.bibliome.util.aggregate.TableAggregator
