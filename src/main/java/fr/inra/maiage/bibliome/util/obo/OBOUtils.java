@@ -16,11 +16,13 @@ limitations under the License.
 
 package fr.inra.maiage.bibliome.util.obo;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.List;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -36,6 +38,10 @@ import org.obo.datamodel.OBOProperty;
 import org.obo.datamodel.OBOSession;
 import org.obo.datamodel.Synonym;
 import org.obo.util.TermUtil;
+
+import fr.inra.maiage.bibliome.util.mappers.FileAbsolutePathMapper;
+import fr.inra.maiage.bibliome.util.mappers.Mapper;
+import fr.inra.maiage.bibliome.util.mappers.Mappers;
 
 public class OBOUtils {
 	public static Collection<StringBuilder> getPaths(LinkedObject term) {
@@ -130,7 +136,15 @@ public class OBOUtils {
 	public static final OBOSession parseOBO(String... sources) throws IOException, OBOParseException {
 		return parseOBO(Arrays.asList(sources));
 	}
-	
+
+	@SafeVarargs
+	public static final <F extends File> OBOSession parseOBO(F... sources) throws IOException, OBOParseException {
+		List<F> sourceList = Arrays.asList(sources);
+		Mapper<F,String> mapper = new FileAbsolutePathMapper<F>();
+		List<String> pathList = Mappers.apply(mapper, sourceList, new ArrayList<String>(sources.length));
+		return parseOBO(pathList);
+	}
+
 	public static void main(String[] args) throws IOException, OBOParseException {
 		OBOSession session = parseOBO(args);
 		for (OBOClass term : TermUtil.getTerms(session)) {
