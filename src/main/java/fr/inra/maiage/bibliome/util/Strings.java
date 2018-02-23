@@ -38,6 +38,8 @@ import fr.inra.maiage.bibliome.util.mappers.ToStringMapper;
  * Miscellaneous string utilities.
  */
 public abstract class Strings {
+	public static final char ZWSP = '\u200B';
+	
     private static final Map<Character,String> xmlSpecial = new HashMap<Character,String>();
     private static final Map<Character,String> javaSpecial = new HashMap<Character,String>();
     private static final Map<Character,String> latexSpecial = new HashMap<Character,String>();
@@ -135,6 +137,28 @@ public abstract class Strings {
         if (sb == null)
             return src.toString();
         return sb.toString();
+    }
+    
+    public static String removeZWSP(String s) {
+    	StringBuilder sb = new StringBuilder();
+    	boolean foundOne = false;
+    	for (int i = 0; i < s.length(); ++i) {
+    		char c = s.charAt(i);
+    		if (c == ZWSP) {
+    			if (!foundOne) {
+    				sb.append(s.substring(0, i));
+    				foundOne = true;
+    			}
+    			continue;
+    		}
+    		if (foundOne) {
+    			sb.append(c);
+    		}
+    	}
+    	if (foundOne) {
+    		return sb.toString();
+    	}
+    	return s;
     }
 
     /**
