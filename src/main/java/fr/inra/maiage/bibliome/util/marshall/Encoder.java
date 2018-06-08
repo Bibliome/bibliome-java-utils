@@ -32,6 +32,8 @@ public interface Encoder<T> {
 	 */
 	int getSize(T object);
 	
+	static int REFERENCE_SIZE = 8;
+	
 	/**
 	 * Encodes the specified object in the specified buffer.
 	 * It is the caller responsibility to set the buffer position and limit.

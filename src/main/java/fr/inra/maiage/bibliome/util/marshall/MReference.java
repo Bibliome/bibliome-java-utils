@@ -16,6 +16,8 @@ limitations under the License.
 
 package fr.inra.maiage.bibliome.util.marshall;
 
+import java.io.IOException;
+
 /**
  * A marshall reference.
  * @author rbossy
@@ -26,10 +28,11 @@ public interface MReference<T> {
 	/**
 	 * Returns the position of the referenced object.
 	 */
-	int getPosition();
+	long getPosition();
 	
 	/**
 	 * Returns the referenced object.
+	 * @throws IOException 
 	 */
 	T get();
 }

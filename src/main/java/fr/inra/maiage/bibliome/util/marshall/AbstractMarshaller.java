@@ -27,14 +27,14 @@ public abstract class AbstractMarshaller<T> {
 		this.channel = channel;
 	}
 	
-	public static int getPosition(FileChannel channel) throws IOException {
+	public static long getPosition(FileChannel channel) throws IOException {
 		long result = channel.position();
-		if (result > Integer.MAX_VALUE)
-			throw new IOException("position exceeds 32-bit value");
-		return (int) result;
+//		if (result > Integer.MAX_VALUE)
+//			throw new IOException("position exceeds 32-bit value");
+		return result;
 	}
-	
-	protected int getPosition() throws IOException {
+
+	protected long getPosition() throws IOException {
 		return getPosition(channel);
 	}
 

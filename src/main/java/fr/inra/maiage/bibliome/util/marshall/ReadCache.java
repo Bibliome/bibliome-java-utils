@@ -27,12 +27,12 @@ public interface ReadCache<T> {
 	 * Returns the object at the specified position, null if there is no object currently retained at the specified position in this cache.
 	 * @param position
 	 */
-	T get(int position);
+	T get(long position);
 	
 	/**
 	 * Retains the specified object at the specified position.
 	 * @param position
 	 * @param object
 	 */
-	void put(int position, T object);
+	void put(long position, T object);
 }

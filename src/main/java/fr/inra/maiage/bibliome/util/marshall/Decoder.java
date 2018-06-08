@@ -16,6 +16,7 @@ limitations under the License.
 
 package fr.inra.maiage.bibliome.util.marshall;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
@@ -30,6 +31,7 @@ public interface Decoder<T> {
 	 * It is the caller responsibility to set the buffer position at the beginning of a marshalled object.
 	 * @param buffer
 	 * @return the decoded object.
+	 * @throws IOException 
 	 */
 	T decode1(ByteBuffer buffer);
 	

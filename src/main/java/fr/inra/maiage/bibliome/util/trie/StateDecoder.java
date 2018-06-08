@@ -37,8 +37,8 @@ class StateDecoder<T> implements Decoder<State<T>> {
 		int n = buffer.getInt();
 		for (int i = 0; i < n; ++i) {
 			int c = buffer.getInt();
-			int ft = buffer.getInt();
-			int v = buffer.getInt();
+			long ft = buffer.getLong();
+			long v = buffer.getLong();
 			MReference<State<T>> firstTransition = new MReferenceImpl<State<T>>(ft, trie.getStateUnmarshaller());
 			MReference<List<T>> values = new MReferenceImpl<List<T>>(v, trie.getValuesUnmarshaller());
 			result = new State<T>(c, result, firstTransition, values);

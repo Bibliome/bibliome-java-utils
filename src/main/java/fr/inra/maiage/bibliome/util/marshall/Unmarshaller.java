@@ -20,7 +20,6 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.nio.file.Path;
@@ -35,7 +34,8 @@ import java.nio.file.StandardOpenOption;
 public class Unmarshaller<T> extends AbstractMarshaller<T> implements Closeable {
 	private final Decoder<T> decoder;
 	private final ReadCache<T> cache;
-	private final MappedByteBuffer buf;
+	//private final MappedByteBuffer buf;
+	private long startPosition;
 	
 	/**
 	 * Creates a new unmarshaller.
@@ -48,8 +48,7 @@ public class Unmarshaller<T> extends AbstractMarshaller<T> implements Closeable 
 		super(channel);
 		this.decoder = decoder;
 		this.cache = cache;
-		int position = getPosition(channel);
-		buf = channel.map(MapMode.READ_ONLY, position, channel.size() - position);
+		this.startPosition = getPosition(channel);
 	}
 	
 	/**
@@ -111,8 +110,9 @@ public class Unmarshaller<T> extends AbstractMarshaller<T> implements Closeable 
 	 * If this unmarshaller has a read cache and the specified position is not in the cache, then the returned object is put in the cache.
 	 * @param position
 	 * @return the unmarshalled object.
+	 * @throws IOException 
 	 */
-	public T read(int position) {
+	public T read(long position) {
 		if (position == -1)
 			return null;
 
@@ -125,8 +125,8 @@ public class Unmarshaller<T> extends AbstractMarshaller<T> implements Closeable 
 		}
 		
 		// first pass decode
-		ByteBuffer buf = getBuffer();
-		buf.position(position);
+		ByteBuffer buf = getBuffer(position);
+		//buf.position((int) position); // XXX unsafe cast
 		result = decoder.decode1(buf);
 		
 		// second pass decode
@@ -147,7 +147,18 @@ public class Unmarshaller<T> extends AbstractMarshaller<T> implements Closeable 
 		return cache;
 	}
 	
-	public ByteBuffer getBuffer() {
-		return buf.duplicate();
+	public ByteBuffer getBuffer(long position) {
+		try {
+			long absPosition = startPosition + position;
+			long size = Math.min(channel.size() - absPosition, Integer.MAX_VALUE);
+			return channel.map(MapMode.READ_ONLY, absPosition, size);
+		}
+		catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
+//	
+//	public ByteBuffer getBuffer() {
+//		return buf.duplicate();
+//	}
 }

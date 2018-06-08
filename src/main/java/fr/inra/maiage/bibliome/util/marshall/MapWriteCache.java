@@ -28,13 +28,13 @@ import java.util.TreeMap;
  * @param <T>
  */
 public class MapWriteCache<T> implements WriteCache<T> {
-	private final Map<T,Integer> map;
+	private final Map<T,Long> map;
 	
 	/**
 	 * Creates a new write cache that relies on the specified map.
 	 * @param map
 	 */
-	public MapWriteCache(Map<T,Integer> map) {
+	public MapWriteCache(Map<T,Long> map) {
 		super();
 		this.map = map;
 	}
@@ -43,21 +43,21 @@ public class MapWriteCache<T> implements WriteCache<T> {
 	 * Returns a new write cache that relies on a hash map.
 	 */
 	public static <T> MapWriteCache<T> hashMap() {
-		return new MapWriteCache<T>(new HashMap<T,Integer>());
+		return new MapWriteCache<T>(new HashMap<T,Long>());
 	}
 	
 	/**
 	 * Returns a new write cache that relies on a tree map that uses natural ordering.
 	 */
 	public static <T> MapWriteCache<T> treeMap() {
-		return new MapWriteCache<T>(new TreeMap<T,Integer>());
+		return new MapWriteCache<T>(new TreeMap<T,Long>());
 	}
 
 	/**
 	 * Returns a new write cache that relies on a tree map that uses the specified comparator.
 	 */
 	public static <T> MapWriteCache<T> treeMap(Comparator<? super T> comp) {
-		return new MapWriteCache<T>(new TreeMap<T,Integer>(comp));
+		return new MapWriteCache<T>(new TreeMap<T,Long>(comp));
 	}
 
 	@Override
@@ -66,16 +66,16 @@ public class MapWriteCache<T> implements WriteCache<T> {
 	}
 
 	@Override
-	public int get(T object) {
+	public long get(T object) {
 		return map.get(object);
 	}
 
 	@Override
-	public void put(T object, int position) {
+	public void put(T object, long position) {
 		map.put(object, position);
 	}
 
-	public Map<T,Integer> getMap() {
+	public Map<T,Long> getMap() {
 		return map;
 	}
 }

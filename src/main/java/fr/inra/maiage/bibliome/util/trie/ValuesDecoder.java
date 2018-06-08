@@ -36,7 +36,7 @@ class ValuesDecoder<T> implements Decoder<List<T>> {
 		int len = buffer.getInt();
 		List<T> result = new ArrayList<T>(len);
 		for (int i = 0; i < len; ++i)
-			result.add(unmarshaller.read(buffer.getInt()));
+			result.add(unmarshaller.read(buffer.getLong()));
 		return result;
 	}
 

@@ -33,13 +33,13 @@ class ValuesEncoder<T> implements Encoder<List<T>> {
 
 	@Override
 	public int getSize(List<T> object) {
-		return (1 + object.size()) * 4;
+		return 4 + object.size() * REFERENCE_SIZE;
 	}
 
 	@Override
 	public void encode(List<T> object, ByteBuffer buf) throws IOException {
 		buf.putInt(object.size());
 		for (T elt : object)
-			buf.putInt(marshaller.write(elt));
+			buf.putLong(marshaller.write(elt));
 	}
 }

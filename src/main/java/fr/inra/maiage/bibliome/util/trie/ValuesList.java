@@ -29,7 +29,7 @@ class ValuesList<T> extends ArrayList<T> implements MReference<List<T>> {
 	}
 
 	@Override
-	public int getPosition() {
+	public long getPosition() {
 		return -2;
 	}
 

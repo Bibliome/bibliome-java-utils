@@ -59,7 +59,7 @@ public class Marshaller<T> extends AbstractMarshaller<T> {
 	 * @return the position of the specified object serialization, -1 if object is null
 	 * @throws IOException
 	 */
-	public int write(T object) throws IOException {
+	public long write(T object) throws IOException {
 		if (object == null)
 			return -1;
 		
@@ -68,7 +68,7 @@ public class Marshaller<T> extends AbstractMarshaller<T> {
 			return cache.get(object);
 		
 		// allocate cache and file space for this object
-		int result = getPosition();
+		long result = getPosition();
 		if (cache != null)
 			cache.put(object, result);
 		int size = encoder.getSize(object);

@@ -28,13 +28,13 @@ import java.util.TreeMap;
  * @param <T>
  */
 public class MapReadCache<T> implements ReadCache<T> {
-	private final Map<Integer,T> map;
+	private final Map<Long,T> map;
 	
 	/**
 	 * Creates a read cache that relies on the specified map.
 	 * @param map
 	 */
-	public MapReadCache(Map<Integer,T> map) {
+	public MapReadCache(Map<Long,T> map) {
 		super();
 		this.map = map;
 	}
@@ -43,27 +43,27 @@ public class MapReadCache<T> implements ReadCache<T> {
 	 * Returns a read cache that relies on a HashMap.
 	 */
 	public static <T> MapReadCache<T> hashMap() {
-		return new MapReadCache<T>(new HashMap<Integer,T>());
+		return new MapReadCache<T>(new HashMap<Long,T>());
 	}
 	
 	/**
 	 * Returns a read cache that relies on a HashMap.
 	 */
 	public static <T> MapReadCache<T> treeMap() {
-		return new MapReadCache<T>(new TreeMap<Integer,T>());
+		return new MapReadCache<T>(new TreeMap<Long,T>());
 	}
 
 	@Override
-	public T get(int position) {
+	public T get(long position) {
 		return map.get(position);
 	}
 
 	@Override
-	public void put(int position, T object) {
+	public void put(long position, T object) {
 		map.put(position, object);
 	}
 
-	public Map<Integer,T> getMap() {
+	public Map<Long,T> getMap() {
 		return Collections.unmodifiableMap(map);
 	}
 }

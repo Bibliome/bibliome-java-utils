@@ -111,7 +111,7 @@ public class State<T> implements MReference<State<T>> {
 	}
 
 	@Override
-	public int getPosition() {
+	public long getPosition() {
 		return -2;
 	}
 

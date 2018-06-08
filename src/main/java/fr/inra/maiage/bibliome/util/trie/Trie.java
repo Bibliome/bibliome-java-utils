@@ -99,7 +99,7 @@ public class Trie<T> implements Closeable {
 		this(file.toPath(), valueDecoder);
 	}
 	
-	private int save(FileChannel channel, Encoder<T> valueEncoder, boolean close) throws IOException {
+	private long save(FileChannel channel, Encoder<T> valueEncoder, boolean close) throws IOException {
 		StateEncoder<T> stateEncoder = new StateEncoder<T>();
 		Marshaller<State<T>> stateMarshaller = new Marshaller<State<T>>(channel, stateEncoder);
 		Marshaller<T> valueMarshaller = new Marshaller<T>(channel, valueEncoder);
@@ -107,7 +107,7 @@ public class Trie<T> implements Closeable {
 		Marshaller<List<T>> valuesMarshaller = new Marshaller<List<T>>(channel, valuesEncoder);
 		stateEncoder.setMarshaller(stateMarshaller);
 		stateEncoder.setValuesMarshaller(valuesMarshaller);
-		int result = stateMarshaller.write(root);
+		long result = stateMarshaller.write(root);
 		if (close)
 			channel.close();
 		return result;
@@ -120,7 +120,7 @@ public class Trie<T> implements Closeable {
 	 * @return the position of the trie in the channel.
 	 * @throws IOException
 	 */
-	public int save(FileChannel channel, Encoder<T> valueEncoder) throws IOException {
+	public long save(FileChannel channel, Encoder<T> valueEncoder) throws IOException {
 		return save(channel, valueEncoder, false);
 	}
 
@@ -131,7 +131,7 @@ public class Trie<T> implements Closeable {
 	 * @return the position of the trie in the file.
 	 * @throws IOException
 	 */
-	public int save(Path path, Encoder<T> valueEncoder) throws IOException {
+	public long save(Path path, Encoder<T> valueEncoder) throws IOException {
 		return save(FileChannel.open(path, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE), valueEncoder, true);
 	}
 	
@@ -142,7 +142,7 @@ public class Trie<T> implements Closeable {
 	 * @return the position of the trie in the file.
 	 * @throws IOException
 	 */
-	public int save(String path, Encoder<T> valueEncoder) throws IOException {
+	public long save(String path, Encoder<T> valueEncoder) throws IOException {
 		return save(Paths.get(path), valueEncoder);
 	}
 	
@@ -153,7 +153,7 @@ public class Trie<T> implements Closeable {
 	 * @return the position of the trie in the file.
 	 * @throws IOException
 	 */
-	public int save(File file, Encoder<T> valueEncoder) throws IOException {
+	public long save(File file, Encoder<T> valueEncoder) throws IOException {
 		return save(file.toPath(), valueEncoder);
 	}
 	

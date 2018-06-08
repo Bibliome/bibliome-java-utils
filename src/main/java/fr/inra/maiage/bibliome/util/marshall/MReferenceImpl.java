@@ -16,6 +16,8 @@ limitations under the License.
 
 package fr.inra.maiage.bibliome.util.marshall;
 
+import java.io.IOException;
+
 /**
  * Marshall reference implementation.
  * @author rbossy
@@ -24,7 +26,7 @@ package fr.inra.maiage.bibliome.util.marshall;
  */
 public class MReferenceImpl<T> implements MReference<T> {
 	private final Unmarshaller<T> unmarshaller;
-	private final int position;
+	private final long position;
 	private T value;
 	
 	/**
@@ -33,7 +35,7 @@ public class MReferenceImpl<T> implements MReference<T> {
 	 * @param position
 	 * @param unmarshaller
 	 */
-	public MReferenceImpl(int position, Unmarshaller<T> unmarshaller) {
+	public MReferenceImpl(long position, Unmarshaller<T> unmarshaller) {
 		super();
 		this.position = position;
 		this.unmarshaller = unmarshaller;
@@ -47,7 +49,7 @@ public class MReferenceImpl<T> implements MReference<T> {
 	}
 
 	@Override
-	public int getPosition() {
+	public long getPosition() {
 		return position;
 	}
 }

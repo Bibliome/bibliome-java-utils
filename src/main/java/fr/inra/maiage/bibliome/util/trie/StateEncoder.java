@@ -24,7 +24,7 @@ import fr.inra.maiage.bibliome.util.marshall.Encoder;
 import fr.inra.maiage.bibliome.util.marshall.Marshaller;
 
 class StateEncoder<T> implements Encoder<State<T>> {
-	private static int STATE_SIZE = 12;
+	private static int STATE_SIZE = 20;
 	
 	private Marshaller<State<T>> marshaller;
 	private Marshaller<List<T>> valuesMarshaller;
@@ -45,8 +45,8 @@ class StateEncoder<T> implements Encoder<State<T>> {
 		buf.putInt(n);
 		for (State<T> t = object; t != null; t = t.getNextSibling()) {
 			buf.putInt(t.getChar());
-			buf.putInt(marshaller.write(t.getFirstTransition()));
-			buf.putInt(valuesMarshaller.write(t.getValues()));
+			buf.putLong(marshaller.write(t.getFirstTransition()));
+			buf.putLong(valuesMarshaller.write(t.getValues()));
 		}
 	}
 
