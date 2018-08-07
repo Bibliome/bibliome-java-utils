@@ -25,4 +25,16 @@ public class UnsupportedServiceException extends ServiceException {
     public UnsupportedServiceException(String msg) {
         super(msg);
     }
+
+	public UnsupportedServiceException() {
+		super();
+	}
+
+	public UnsupportedServiceException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+	public UnsupportedServiceException(Throwable cause) {
+		super(cause);
+	}
 }
