@@ -18,6 +18,10 @@ import fr.inra.maiage.bibliome.util.aggregate.aggregators.CountEmpty;
 import fr.inra.maiage.bibliome.util.aggregate.aggregators.CountNonEmpty;
 import fr.inra.maiage.bibliome.util.aggregate.aggregators.CountValues;
 import fr.inra.maiage.bibliome.util.aggregate.aggregators.First;
+import fr.inra.maiage.bibliome.util.aggregate.aggregators.FloatMax;
+import fr.inra.maiage.bibliome.util.aggregate.aggregators.FloatMean;
+import fr.inra.maiage.bibliome.util.aggregate.aggregators.FloatMin;
+import fr.inra.maiage.bibliome.util.aggregate.aggregators.FloatSum;
 import fr.inra.maiage.bibliome.util.aggregate.aggregators.Max;
 import fr.inra.maiage.bibliome.util.aggregate.aggregators.Mean;
 import fr.inra.maiage.bibliome.util.aggregate.aggregators.Min;
@@ -124,6 +128,7 @@ public class TableAggregator extends CLIOParser {
 	private static class AggregatorOptions {
 		private boolean lax = true;
 		private boolean sorted = false;
+		private boolean nonInteger = false;
 		private String separator = ", ";
 		private String format = null;
 		
@@ -133,6 +138,9 @@ public class TableAggregator extends CLIOParser {
 			}
 			else if (opt.equals("sorted")) {
 				sorted = true;
+			}
+			else if (opt.equals("float")) {
+				nonInteger = true;
 			}
 			else if (opt.contains("%")) {
 				format = opt;
@@ -169,12 +177,20 @@ public class TableAggregator extends CLIOParser {
 			case "first":
 				return new First.Factory();
 			case "sum":
+				if (opts.nonInteger)
+					return new FloatSum.Factory(opts.lax);
 				return new Sum.Factory(opts.lax);
 			case "min":
+				if (opts.nonInteger)
+					return new FloatMin.Factory(opts.lax);
 				return new Min.Factory(opts.lax);
 			case "max":
+				if (opts.nonInteger)
+					return new FloatMax.Factory(opts.lax);
 				return new Max.Factory(opts.lax);
 			case "mean":
+				if (opts.nonInteger)
+					return new FloatMean.Factory(opts.lax, opts.getMeanFormat());
 				return new Mean.Factory(opts.lax, opts.getMeanFormat());
 			case "list":
 				return new CollectionAggregator.Factory(CollectionFactory.LIST, opts.separator);
