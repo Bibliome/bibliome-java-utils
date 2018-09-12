@@ -22,10 +22,12 @@ import fr.inra.maiage.bibliome.util.aggregate.aggregators.FloatMax;
 import fr.inra.maiage.bibliome.util.aggregate.aggregators.FloatMean;
 import fr.inra.maiage.bibliome.util.aggregate.aggregators.FloatMin;
 import fr.inra.maiage.bibliome.util.aggregate.aggregators.FloatSum;
+import fr.inra.maiage.bibliome.util.aggregate.aggregators.FloatVariance;
 import fr.inra.maiage.bibliome.util.aggregate.aggregators.Max;
 import fr.inra.maiage.bibliome.util.aggregate.aggregators.Mean;
 import fr.inra.maiage.bibliome.util.aggregate.aggregators.Min;
 import fr.inra.maiage.bibliome.util.aggregate.aggregators.Sum;
+import fr.inra.maiage.bibliome.util.aggregate.aggregators.Variance;
 import fr.inra.maiage.bibliome.util.clio.CLIOException;
 import fr.inra.maiage.bibliome.util.clio.CLIOParser;
 import fr.inra.maiage.bibliome.util.clio.CLIOption;
@@ -198,6 +200,10 @@ public class TableAggregator extends CLIOParser {
 				return new CollectionAggregator.Factory(opts.sorted ? CollectionFactory.SORTED_SET : CollectionFactory.SET, opts.separator);
 			case "count-values":
 				return new CountValues.Factory(opts.getCountValuesFormat(), opts.separator);
+			case "var":
+				if (opts.nonInteger) 
+					return new FloatVariance.Factory(opts.lax, opts.getMeanFormat());
+				return new Variance.Factory(opts.lax, opts.getMeanFormat());
 		}
 		throw new CLIOException("unknown aggregator: " + agg);
 	}
