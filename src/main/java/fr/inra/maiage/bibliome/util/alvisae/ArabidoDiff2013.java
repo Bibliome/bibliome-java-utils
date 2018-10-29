@@ -447,6 +447,7 @@ public class ArabidoDiff2013 {
 		private int perfectMatches;
 		private float boundaryMismatches;
 		private int typeMismatches;
+		private int propertyMismatches;
 		private int mismatches;
 		private int missingLeft;
 		private int missingRight;
@@ -457,6 +458,7 @@ public class ArabidoDiff2013 {
 			System.out.format("<tr><td align=\"right\">%d (%.2f)</td><th>Missing</th><td>%d (%.2f)</td></tr>", missingLeft, ((float) missingLeft) / totalRight, missingRight, ((float) missingRight) / totalLeft);
 			System.out.format("<tr><td align=\"right\">%.2f (%.2f)</td><th>Boundary mismatches</th><td>%.2f (%.2f)</td></tr>", boundaryMismatches, (boundaryMismatches / totalLeft), boundaryMismatches, (boundaryMismatches / totalRight));
 			System.out.format("<tr><td align=\"right\">%d (%.2f)</td><th>Type mismatches</th><td>%d (%.2f)</td></tr>", typeMismatches, ((float) typeMismatches) / totalLeft, typeMismatches, ((float) typeMismatches) / totalRight);
+			System.out.format("<tr><td align=\"right\">%d (%.2f)</td><th>Property mismatches</th><td>%d (%.2f)</td></tr>", propertyMismatches, ((float) propertyMismatches) / totalLeft, propertyMismatches, ((float) propertyMismatches) / totalRight);
 			System.out.format("<tr><td align=\"right\">%d (%.2f)</td><th>Mismatches</th><td>%d (%.2f)</td></tr>", mismatches, ((float) mismatches) / totalLeft, mismatches, ((float) mismatches) / totalRight);
 			float errors = missingLeft + missingRight + mismatches;
 			System.out.format("<tr><td align=\"right\">%.2f</td><th>SER</th><td>%.2f</td></tr>", errors / totalRight, errors / totalLeft);
@@ -519,6 +521,20 @@ public class ArabidoDiff2013 {
 			this.tB = tB;
 			this.boundaries = jaccard(tA, tB);
 		}
+		
+		private boolean sameProperties() {
+			for (String key : tA.getPropertyKeys()) {
+				if (!tB.hasProperty(key)) {
+					return false;
+				}
+				Set<Object> values1 = new HashSet<Object>(tA.getProperty(key));
+				Set<Object> values2 = new HashSet<Object>(tB.getProperty(key));
+				if (!values1.equals(values2)) {
+					return false;
+				}
+			}
+			return true;
+		}
 
 		@Override
 		protected void report(TextBoundReport tbr) throws IOException {
@@ -532,6 +548,10 @@ public class ArabidoDiff2013 {
 			if (!tA.getType().equals(tB.getType())) {
 				mismatch.add("TYPE");
 				tbr.typeMismatches++;
+			}
+			if (!sameProperties()) {
+				mismatch.add("PROPERTIES");
+				tbr.propertyMismatches++;
 			}
 			if (mismatch.isEmpty()) {
 				tbr.perfectMatches++;
@@ -679,18 +699,19 @@ public class ArabidoDiff2013 {
 		diffRelations(aset1, aset2, equiv);
 	}
 	
-	private static final String URL = "jdbc:postgresql://bddev:5432/annotation";
-	private static final String SCHEMA = "aae_new_arabido";
+//	private static final int CAMPAIGN_ID = 52;
+	private static final String URL = "jdbc:postgresql://bdd:5432/annotation";
+	private static final String SCHEMA = "aae_ontobiotope2013";
 	private static final String USER = "annotation_admin";
-	private static final String PASSWORD = "annotdba84";
+	private static final String PASSWORD = "annotroot;84";
 
 	public static void main(String[] args) throws ClassNotFoundException, SQLException, ParseException, IOException {
 		switch (args[0]) {
 			case "diff":
-				doDiff(Integer.parseInt(args[1]), args[2], args[3], args[4], args[5]);
+				doDiff(Integer.parseInt(args[1]), Integer.parseInt(args[2]), args[3], args[4], args[5], args[6]);
 				break;
 			case "docs":
-				queryDocs(Arrays.asList(args).subList(1, args.length));
+				queryDocs(Integer.parseInt(args[1]), Arrays.asList(args).subList(2, args.length));
 				break;
 			default:
 				throw new RuntimeException();
@@ -709,9 +730,9 @@ public class ArabidoDiff2013 {
 		}
 	};
 	
-	private static void queryDocs(List<String> args) throws SQLException, ClassNotFoundException, ParseException {
+	private static void queryDocs(int campaignId, List<String> args) throws SQLException, ClassNotFoundException, ParseException {
 		try (Connection connection = openConnection()) {
-			Campaign campaign = new Campaign(false, SCHEMA, 11);
+			Campaign campaign = new Campaign(false, SCHEMA, campaignId);
 			LoadOptions options = new LoadOptions();
 			options.setLoadContents(false);
 			options.setLoadGroups(false);
@@ -738,14 +759,14 @@ public class ArabidoDiff2013 {
 			}
 			Collections.sort(docs, DOCUMENT_COMPARATOR);
 			for (AlvisAEDocument doc : docs) {
-				System.out.println(doc.getDescription() + "\t" + doc.getId());
+				System.out.println(doc.getDescription().replace('\n', ' ') + "\t" + doc.getId());
 			}
 		}
 	}
 	
-	private static void doDiff(int docId, String annotator1, String annotator2, String task1, String task2) throws SQLException, ParseException, ClassNotFoundException, IOException {
+	private static void doDiff(int campaignId, int docId, String annotator1, String annotator2, String task1, String task2) throws SQLException, ParseException, ClassNotFoundException, IOException {
 		try (Connection connection = openConnection()) {
-			Campaign campaign = new Campaign(false, SCHEMA, 11);
+			Campaign campaign = new Campaign(false, SCHEMA, campaignId);
 			LoadOptions options = new LoadOptions();
 			options.addDocId(docId);
 			campaign.loadDocuments(null, connection, options);
@@ -761,7 +782,15 @@ public class ArabidoDiff2013 {
 			System.out.println("<h1>" + docs.getDescription() + "</h2>");
 			Iterator<AnnotationSet> asets = docs.getAnnotationSets().iterator();
 			AnnotationSet aset1 = asets.next();
+			if (aset1.getUser() == null) {
+				aset1 = asets.next();
+			}
 			AnnotationSet aset2 = asets.next();
+			System.out.println("aset1 = " + aset1);
+			System.out.println("aset2 = " + aset2);
+			System.out.println("aset1.getUser() = " + aset1.getUser());
+			System.out.println("aset2.getUser() = " + aset2.getUser());
+			System.out.println("annotator2 = " + annotator2);
 			if (aset1.getUser().equals(annotator2)) {
 				AnnotationSet as = aset1;
 				aset1 = aset2;
