@@ -95,6 +95,11 @@ public class Relation extends AlvisAEAnnotation {
 		return this;
 	}
 	
+	@Override
+	public <R,P> R accept(AnnotationVisitor<R,P> visitor, P param) {
+		return visitor.visit(this, param);
+	}
+
 	public Collection<String> getRoles() {
 		return Collections.unmodifiableCollection(arguments.keySet());
 	}

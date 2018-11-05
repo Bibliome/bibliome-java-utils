@@ -82,6 +82,11 @@ public class TextBound extends AlvisAEAnnotation {
 		return null;
 	}
 	
+	@Override
+	public <R,P> R accept(AnnotationVisitor<R,P> visitor, P param) {
+		return visitor.visit(this, param);
+	}
+
 	public int length() {
 		int result = 0;
 		for (Fragment f : fragments)

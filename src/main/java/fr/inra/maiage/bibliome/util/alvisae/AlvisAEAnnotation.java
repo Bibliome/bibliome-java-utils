@@ -107,6 +107,8 @@ public abstract class AlvisAEAnnotation extends AnnotationReference {
 	
 	public abstract Relation asRelation();
 	
+	public abstract <R,P> R accept(AnnotationVisitor<R,P> visitor, P param);
+	
 	public abstract void toString(StringBuilder sb, boolean withId);
 	
 	protected void openToString(StringBuilder sb, boolean withId) {

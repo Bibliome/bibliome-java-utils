@@ -96,6 +96,11 @@ public class Group extends AlvisAEAnnotation {
 		return null;
 	}
 	
+	@Override
+	public <R,P> R accept(AnnotationVisitor<R,P> visitor, P param) {
+		return visitor.visit(this, param);
+	}
+
 	public int size() {
 		return items.size();
 	}
