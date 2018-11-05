@@ -28,3 +28,4 @@ fi
 ./make-java-launcher.sh "$LIB_DIR" "$BIN_DIR"/pubmed-index           fr.inra.maiage.bibliome.util.pubmed.PubMedIndexUpdater
 ./make-java-launcher.sh "$LIB_DIR" "$BIN_DIR"/pubmed-search          fr.inra.maiage.bibliome.util.pubmed.PubMedIndexSearcher
 ./make-java-launcher.sh "$LIB_DIR" "$BIN_DIR"/aggregate-table        fr.inra.maiage.bibliome.util.aggregate.TableAggregator
+./make-java-launcher.sh "$LIB_DIR" "$BIN_DIR"/adjudication-stray-annotations fr.inra.maiage.bibliome.util.alvisae.AdjudicationStrayAnnotations
