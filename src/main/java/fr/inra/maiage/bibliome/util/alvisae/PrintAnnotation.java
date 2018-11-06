@@ -31,7 +31,7 @@ public class PrintAnnotation implements AnnotationVisitor<Void,String> {
 			if (formWindowSize > 0) {
 				int before = Math.max(0, start - formWindowSize);
 				int after = Math.min((int) len, end + formWindowSize);
-				out.format("%s%s[%s]%s\n", indent, contents.substring(before, start), contents.substring(start, end), contents.substring(end, after));
+				out.format("%s%s\u001B[31m%s\u001B[0m%s\n", indent, contents.substring(before, start), contents.substring(start, end), contents.substring(end, after));
 			}
 		}
 		return null;
