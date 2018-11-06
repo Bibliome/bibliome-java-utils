@@ -4,8 +4,10 @@ import java.io.Console;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.json.simple.parser.ParseException;
@@ -33,7 +35,6 @@ public class AdjudicationStrayAnnotations extends CLIOParser {
 		private AnnotationSetDispatch(AlvisAEDocument doc) {
 			for (AnnotationSet aset : doc.getAnnotationSets()) {
 				String t = aset.getTask();
-				System.err.println("t = " + t);
 				if (t == null) {
 					continue;
 				}
@@ -110,9 +111,21 @@ public class AdjudicationStrayAnnotations extends CLIOParser {
 	private static void checkAnnotations(Collection<AlvisAEAnnotation> referencedAnnotations, AnnotationSet aset) {
 		System.out.format("Checking annotations from %s (%s, id: %d)\n", aset.getUser(), aset.getTask(), aset.getId());
 		PrintAnnotation pa = new PrintAnnotation(System.out);
-		for (AlvisAEAnnotation ann : aset.getAnnotations()) {
-			if (!referencedAnnotations.contains(ann)) {
-				ann.accept(pa, "    ");
+		List<TextBound> tbs = new ArrayList<TextBound>(aset.getTextBounds());
+		tbs.sort(TextBound.COMPARATOR);
+		for (TextBound tb : tbs) {
+			if (!referencedAnnotations.contains(tb)) {
+				pa.visit(tb, "    ");
+			}
+		}
+		for (Group grp : aset.getGroups()) {
+			if (!referencedAnnotations.contains(grp)) {
+				pa.visit(grp, "    ");
+			}
+		}
+		for (Relation rel : aset.getRelations()) {
+			if (!referencedAnnotations.contains(rel)) {
+				pa.visit(rel, "    ");
 			}
 		}
 	}
