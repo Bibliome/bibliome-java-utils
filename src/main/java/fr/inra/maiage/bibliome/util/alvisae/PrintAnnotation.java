@@ -20,9 +20,10 @@ public class PrintAnnotation implements AnnotationVisitor<Void,String> {
 	@Override
 	public Void visit(TextBound tb, String indent) {
 		indent = preamble(tb, indent, "Text-Bound");
-		float len = tb.getDocument().getContents().length();
+		String contents = tb.getDocument().getContents();
+		float len = contents.length();
 		for (Fragment frag : tb.getFragments()) {
-			out.format("%s%d-%d (%.2f-%.2f)\n", indent, frag.getStart(), frag.getEnd(), (frag.getStart() / len), (frag.getEnd() / len));
+			out.format("%s%d-%d (%.2f-%.2f) \"%s\"\n", indent, frag.getStart(), frag.getEnd(), (frag.getStart() / len), (frag.getEnd() / len), contents.substring(frag.getStart(), frag.getEnd()));
 		}
 		return null;
 	}
