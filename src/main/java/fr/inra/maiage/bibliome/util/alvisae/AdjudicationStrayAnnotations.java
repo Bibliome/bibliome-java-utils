@@ -59,18 +59,18 @@ public class AdjudicationStrayAnnotations extends CLIOParser {
 			}
 		}
 		
-		private void addReferencedAnnotations(Collection<AlvisAEAnnotation> result, Collection<SourceAnnotation> sources) {
-			for (SourceAnnotation s : sources) {
-				result.add(s.getAnnotation());
+		private void addReferencedAnnotations(Collection<String> result, Collection<SourceAnnotationReference> sourceRefs) {
+			for (SourceAnnotationReference ref : sourceRefs) {
+				result.add(ref.getAnnotationId());
 			}
 		}
 		
-		private Collection<AlvisAEAnnotation> getReferencedAnnotations() {
-			Collection<AlvisAEAnnotation> result = new HashSet<AlvisAEAnnotation>();
+		private Collection<String> getReferencedAnnotations() {
+			Collection<String> result = new HashSet<String>();
 			for (AlvisAEAnnotation a : aSetAdj.getAnnotations()) {
-				addReferencedAnnotations(result, a.getSources());
+				addReferencedAnnotations(result, a.getSourceReferences());
 			}
-			addReferencedAnnotations(result, aSetAdj.getUnmatched());
+			addReferencedAnnotations(result, aSetAdj.getUnmatchedReferences());
 			return result;
 		}
 	}
@@ -78,7 +78,7 @@ public class AdjudicationStrayAnnotations extends CLIOParser {
 	private void run(Connection connection) throws SQLException, ParseException {
 		AlvisAEDocument doc = load(connection);
 		AnnotationSetDispatch aSets = new AnnotationSetDispatch(doc);
-		Collection<AlvisAEAnnotation> referencedAnnotations = aSets.getReferencedAnnotations();
+		Collection<String> referencedAnnotations = aSets.getReferencedAnnotations();
 		checkAnnotations(referencedAnnotations, aSets.aSet1);
 		checkAnnotations(referencedAnnotations, aSets.aSet2);
 	}
@@ -103,28 +103,28 @@ public class AdjudicationStrayAnnotations extends CLIOParser {
 		campaign.loadDocuments(logger, connection, options);
 		options.addUserName(userName);
 		options.setTaskName(taskName);
-		options.setLoadDependencies(true);
+		//options.setLoadDependencies(true);
 		campaign.loadAnnotationSets(logger, connection, options);
 		return campaign.getDocuments().iterator().next();
 	}
 
-	private static void checkAnnotations(Collection<AlvisAEAnnotation> referencedAnnotations, AnnotationSet aset) {
+	private static void checkAnnotations(Collection<String> referencedAnnotations, AnnotationSet aset) {
 		System.out.format("Checking annotations from %s (%s, id: %d)\n", aset.getUser(), aset.getTask(), aset.getId());
 		PrintAnnotation pa = new PrintAnnotation(System.out);
 		List<TextBound> tbs = new ArrayList<TextBound>(aset.getTextBounds());
 		tbs.sort(TextBound.COMPARATOR);
 		for (TextBound tb : tbs) {
-			if (!referencedAnnotations.contains(tb)) {
+			if (!referencedAnnotations.contains(tb.getId())) {
 				pa.visit(tb, "    ");
 			}
 		}
 		for (Group grp : aset.getGroups()) {
-			if (!referencedAnnotations.contains(grp)) {
+			if (!referencedAnnotations.contains(grp.getId())) {
 				pa.visit(grp, "    ");
 			}
 		}
 		for (Relation rel : aset.getRelations()) {
-			if (!referencedAnnotations.contains(rel)) {
+			if (!referencedAnnotations.contains(rel.getId())) {
 				pa.visit(rel, "    ");
 			}
 		}
