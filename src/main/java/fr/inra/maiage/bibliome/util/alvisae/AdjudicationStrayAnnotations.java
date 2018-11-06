@@ -103,14 +103,14 @@ public class AdjudicationStrayAnnotations extends CLIOParser {
 		campaign.loadDocuments(logger, connection, options);
 		options.addUserName(userName);
 		options.setTaskName(taskName);
-		//options.setLoadDependencies(true);
+		options.setLoadDependencies(true);
 		campaign.loadAnnotationSets(logger, connection, options);
 		return campaign.getDocuments().iterator().next();
 	}
 
 	private static void checkAnnotations(Collection<String> referencedAnnotations, AnnotationSet aset) {
 		System.out.format("Checking annotations from %s (%s, id: %d)\n", aset.getUser(), aset.getTask(), aset.getId());
-		PrintAnnotation pa = new PrintAnnotation(System.out);
+		PrintAnnotation pa = new PrintAnnotation(System.out, 40);
 		List<TextBound> tbs = new ArrayList<TextBound>(aset.getTextBounds());
 		tbs.sort(TextBound.COMPARATOR);
 		for (TextBound tb : tbs) {
