@@ -32,7 +32,12 @@ public class AdjudicationStrayAnnotations extends CLIOParser {
 		
 		private AnnotationSetDispatch(AlvisAEDocument doc) {
 			for (AnnotationSet aset : doc.getAnnotationSets()) {
-				if (aset.getTask().equals(taskName)) {
+				String t = aset.getTask();
+				System.err.println("t = " + t);
+				if (t == null) {
+					continue;
+				}
+				if (t.equals(taskName)) {
 					if (aSetAdj != null) {
 						throw new RuntimeException();
 					}
