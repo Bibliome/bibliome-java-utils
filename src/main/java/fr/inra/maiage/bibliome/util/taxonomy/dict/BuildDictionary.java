@@ -49,7 +49,7 @@ import fr.inra.maiage.bibliome.util.taxonomy.saturate.Saturate;
  */
 public class BuildDictionary extends CLIOParser {
 	private File nodesFile;
-	private int size = 2000000;
+	private int size = 3000000;
 	private final Collection<File> namesFiles = new ArrayList<File>();
 	private File saturationFile;
 	private File rejectionFile;
