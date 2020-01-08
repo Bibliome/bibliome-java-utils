@@ -49,7 +49,6 @@ import fr.inra.maiage.bibliome.util.taxonomy.saturate.Saturate;
  */
 public class BuildDictionary extends CLIOParser {
 	private File nodesFile;
-	private int size = 3000000;
 	private final Collection<File> namesFiles = new ArrayList<File>();
 	private File saturationFile;
 	private File rejectionFile;
@@ -60,6 +59,7 @@ public class BuildDictionary extends CLIOParser {
 			new ConstantPattern("\n")));
 	private String pathSeparator = "/";
 	private boolean iterateNames = true;
+	private String idPrefix = "";
 	
 	@Override
 	public String getResourceBundleName() {
@@ -73,14 +73,10 @@ public class BuildDictionary extends CLIOParser {
 		nodesFile = (File) convertArgument(File.class, arg);
 		return false;
 	}
-
-	/**
-	 * Sets the maximum taxon identifier.
-	 * @param nodesSize
-	 */
-	@CLIOption("-nodesSize")
-	public void setNodesSize(int nodesSize) {
-		size = nodesSize + 1;
+	
+	@CLIOption("-prefix")
+	public void setIdPrefix(String idPrefix) {
+		this.idPrefix = idPrefix;
 	}
 	
 	/**
@@ -225,13 +221,13 @@ public class BuildDictionary extends CLIOParser {
 			if (err)
 				System.exit(1);
 		}
-		NCBITaxonomy taxonomy = new NCBITaxonomy();
-		taxonomy.readNodes(logger, inst.nodesFile, inst.size);
+		NCBITaxonomy taxonomy = new NCBITaxonomy(inst.idPrefix);
+		taxonomy.readNodes(logger, inst.nodesFile);
 		
 		/* Name filter and synonym generation */
 		RejectName reject = RejectNone.INSTANCE;
 		if (inst.rejectionFile != null)
-			reject = new RejectDisjunction(NCBITaxonomy.readReject(logger, inst.rejectionFile));
+			reject = new RejectDisjunction(taxonomy.readReject(logger, inst.rejectionFile));
 		for (File f : inst.namesFiles)
 			taxonomy.readNames(logger, f, reject);
 		if (inst.saturationFile != null)

@@ -37,7 +37,7 @@ public class Taxon {
 	 */
 	public static final String CANONICAL_NAME_TYPE = "scientific name";
 	
-	private final int taxid;
+	private final String taxid;
 	private final String rank;
 	private final int division;
 	private Taxon parent;
@@ -51,7 +51,7 @@ public class Taxon {
 	 * @param rank
 	 * @param division
 	 */
-	public Taxon(int taxid, String rank, int division) {
+	public Taxon(String taxid, String rank, int division) {
 		super();
 		this.taxid = taxid;
 		this.rank = rank;
@@ -61,7 +61,7 @@ public class Taxon {
 	/**
 	 * Returns this taxon identifier.
 	 */
-	public int getTaxid() {
+	public String getTaxid() {
 		return taxid;
 	}
 
@@ -100,9 +100,11 @@ public class Taxon {
 	public void setParent(Taxon parent) {
 		if (this.parent != null)
 			this.parent.children.remove(this);
-		this.parent = parent;
-		if (parent != null)
-			parent.children.add(this);
+		if (!this.equals(parent)) {
+			this.parent = parent;
+			if (parent != null)
+				parent.children.add(this);
+		}
 	}
 	
 	private void getDescendents(Collection<Taxon> result, boolean includeSelf) {

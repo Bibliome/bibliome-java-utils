@@ -26,7 +26,7 @@ public class RejectNone implements RejectName {
 	}
 
 	@Override
-	public boolean reject(int taxid, Name name) {
+	public boolean reject(String taxid, Name name) {
 		return false;
 	}
 }

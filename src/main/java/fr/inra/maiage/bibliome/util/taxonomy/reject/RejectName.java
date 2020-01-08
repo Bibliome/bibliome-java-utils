@@ -29,5 +29,5 @@ public interface RejectName {
 	 * @param taxid
 	 * @param name
 	 */
-	boolean reject(int taxid, Name name);
+	boolean reject(String taxid, Name name);
 }

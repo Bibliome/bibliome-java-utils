@@ -35,7 +35,7 @@ public class RejectConjunction extends Pair<RejectName,RejectName> implements Re
 	}
 
 	@Override
-	public boolean reject(int taxid, Name name) {
+	public boolean reject(String taxid, Name name) {
 		return first.reject(taxid, name) && second.reject(taxid, name);
 	}
 }

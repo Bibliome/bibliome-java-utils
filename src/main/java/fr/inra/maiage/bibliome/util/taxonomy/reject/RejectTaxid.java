@@ -24,19 +24,19 @@ import fr.inra.maiage.bibliome.util.taxonomy.Name;
  *
  */
 public class RejectTaxid implements RejectName {
-	private final int taxid;
+	private final String taxid;
 
 	/**
 	 * Creates a name reject for all names of the specified taxon identifier.
 	 * @param taxid
 	 */
-	public RejectTaxid(int taxid) {
+	public RejectTaxid(String taxid) {
 		super();
 		this.taxid = taxid;
 	}
 
 	@Override
-	public boolean reject(int taxid, Name name) {
-		return this.taxid == taxid;
+	public boolean reject(String taxid, Name name) {
+		return this.taxid.equals(taxid);
 	}
 }

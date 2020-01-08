@@ -40,7 +40,7 @@ enum TaxonNamePatterns implements TaxonNamePattern {
 	TAXID(false) {
 		@Override
 		public void appendValue(Logger logger, Taxon taxon, Name name, String pathSeparator, Appendable target) throws IOException {
-			target.append(Integer.toString(taxon.getTaxid()));
+			target.append(taxon.getTaxid());
 		}
 	},
 
@@ -89,7 +89,7 @@ enum TaxonNamePatterns implements TaxonNamePattern {
 		public void appendValue(Logger logger, Taxon taxon, Name name, String pathSeparator, Appendable target) throws IOException {
 			for (Taxon ancestor : taxon.getPath(true, true)) {
 				target.append(pathSeparator);
-				target.append(Integer.toString(ancestor.getTaxid()));
+				target.append(ancestor.getTaxid());
 			}
 		}
 	},
@@ -113,7 +113,7 @@ enum TaxonNamePatterns implements TaxonNamePattern {
 		public void appendValue(Logger logger, Taxon taxon, Name name, String pathSeparator, Appendable target) throws IOException {
 			Taxon parent = taxon.getParent();
 			if (parent != null)
-				target.append(Integer.toString(parent.getTaxid()));
+				target.append(parent.getTaxid());
 		}
 	},
 	
@@ -136,7 +136,7 @@ enum TaxonNamePatterns implements TaxonNamePattern {
 		public void appendValue(Logger logger, Taxon taxon, Name name, String pathSeparator, Appendable target) throws IOException {
 			for (Taxon ancestor : taxon.getPath(false, true)) {
 				target.append(pathSeparator);
-				target.append(Integer.toString(ancestor.getTaxid()));
+				target.append(ancestor.getTaxid());
 			}
 		}
 	},
@@ -267,7 +267,7 @@ enum TaxonNamePatterns implements TaxonNamePattern {
 	protected static void appendAncestorIdOfRank(Taxon taxon, String rank, Appendable target) throws IOException {
 		Taxon ancestor = taxon.getAncestorOfRank(rank, true);
 		if (ancestor != null) {
-			target.append(Integer.toString(ancestor.getTaxid()));
+			target.append(ancestor.getTaxid());
 		}
 	}
 

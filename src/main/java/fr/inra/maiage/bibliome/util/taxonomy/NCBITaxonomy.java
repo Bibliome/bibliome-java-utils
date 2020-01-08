@@ -49,9 +49,19 @@ import fr.inra.maiage.bibliome.util.taxonomy.saturate.SaturatePattern;
  *
  */
 public class NCBITaxonomy {
-	private final Map<Integer,Taxon> taxa = new HashMap<Integer,Taxon>();
+	private final String idPrefix;
+	private final Map<String,Taxon> taxa = new HashMap<String,Taxon>();
 	
-	private final class NodesFileLines extends DmpFileLines<int[]> {
+	public NCBITaxonomy(String idPrefix) {
+		super();
+		this.idPrefix = idPrefix;
+	}
+
+	private String buildTaxid(String rawId) {
+		return String.format("%s%s", idPrefix, rawId);
+	}
+	
+	private final class NodesFileLines extends DmpFileLines<Map<String,String>> {
 		private final StringCache rankCache = new StringCache();
 		
 		private NodesFileLines() {
@@ -59,16 +69,18 @@ public class NCBITaxonomy {
 		}
 
 		@Override
-		public void processEntry(int[] data, int lineno, List<String> entry) throws InvalidFileLineEntry {
-			int id = Integer.parseInt(entry.get(0));
-			data[id] = Integer.parseInt(entry.get(1));
+		public void processEntry(Map<String,String> data, int lineno, List<String> entry) throws InvalidFileLineEntry {
+			String id = buildTaxid(entry.get(0));
+			//data[id] = Integer.parseInt(entry.get(1));
 			Taxon taxon = new Taxon(id, rankCache.get(entry.get(2)), Integer.parseInt(entry.get(4)));
 			addTaxon(taxon);
+			String parentId = buildTaxid(entry.get(1));
+			data.put(id, parentId);
 		}
 	}
 	
 	private void addTaxon(Taxon taxon) {
-		int id = taxon.getTaxid();
+		String id = taxon.getTaxid();
 		if (taxa.containsKey(id))
 			throw new IllegalArgumentException();
 		taxa.put(id, taxon);
@@ -82,20 +94,20 @@ public class NCBITaxonomy {
 	 * @throws IOException
 	 * @throws InvalidFileLineEntry
 	 */
-	public void readNodes(Logger logger, File file, int size) throws IOException, InvalidFileLineEntry {
+	public void readNodes(Logger logger, File file) throws IOException, InvalidFileLineEntry {
 		logger.info("reading nodes file: " + file.getCanonicalPath());
 		NodesFileLines fl = new NodesFileLines();
 		fl.setLogger(logger);
-		int[] parent = new int[size];
+		Map<String,String> parent = new HashMap<String,String>();
 		fl.process(file, DmpFileLines.CHARSET, parent);
 		for (Taxon taxon : taxa.values()) {
-			int taxid = taxon.getTaxid();
-			int parentId = parent[taxid];
+			String taxid = taxon.getTaxid();
+			String parentId = parent.get(taxid);
 			taxon.setParent(taxa.get(taxid == parentId ? null : parentId));
 		}
 	}
 	
-	private static final class NamesFileLines extends DmpFileLines<NCBITaxonomy> {
+	private final class NamesFileLines extends DmpFileLines<NCBITaxonomy> {
 		private final StringCache typeCache = new StringCache();
 		private final RejectName reject;
 		
@@ -110,7 +122,7 @@ public class NCBITaxonomy {
 
 		@Override
 		public void processEntry(NCBITaxonomy data, int lineno, List<String> entry)	throws InvalidFileLineEntry {
-			int id = Integer.parseInt(entry.get(0));
+			String id = buildTaxid(entry.get(0));
 			Taxon taxon = data.taxa.get(id);
 			taxon.addName(reject, entry.get(1), typeCache.get(entry.get(3)));
 		}
@@ -166,7 +178,7 @@ public class NCBITaxonomy {
 	 * @param file
 	 * @throws IOException
 	 */
-	public static Collection<RejectName> readReject(Logger logger, File file) throws IOException {
+	public Collection<RejectName> readReject(Logger logger, File file) throws IOException {
 		logger.info("reading rejection file: " + file.getCanonicalPath());
 		Collection<RejectName> result = new ArrayList<RejectName>();
 		InputFile inputFile = new InputFile(file.getCanonicalPath());
@@ -184,12 +196,12 @@ public class NCBITaxonomy {
 		return result;
 	}
 
-	private static RejectName getReject(String line) {
+	private RejectName getReject(String line) {
 		int tab = line.indexOf('\t');
 		if (tab >= 0)
 			return new RejectConjunction(getReject(line.substring(0, tab)), getReject(line.substring(tab+1)));
 		try {
-			return new RejectTaxid(Integer.parseInt(line));
+			return new RejectTaxid(buildTaxid(line));
 		}
 		catch (NumberFormatException nfe) {
 			return new RejectNamePattern(Pattern.compile(line));
@@ -239,7 +251,7 @@ public class NCBITaxonomy {
 		return Collections.unmodifiableCollection(taxa.values());
 	}
 	
-	public Taxon getTaxon(int taxId) {
+	public Taxon getTaxon(String taxId) {
 		return taxa.get(taxId);
 	}
 }
