@@ -4,8 +4,10 @@ import java.io.Console;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.json.simple.parser.ParseException;
@@ -32,7 +34,11 @@ public class AdjudicationStrayAnnotations extends CLIOParser {
 		
 		private AnnotationSetDispatch(AlvisAEDocument doc) {
 			for (AnnotationSet aset : doc.getAnnotationSets()) {
-				if (aset.getTask().equals(taskName)) {
+				String t = aset.getTask();
+				if (t == null) {
+					continue;
+				}
+				if (t.equals(taskName)) {
 					if (aSetAdj != null) {
 						throw new RuntimeException();
 					}
@@ -53,18 +59,18 @@ public class AdjudicationStrayAnnotations extends CLIOParser {
 			}
 		}
 		
-		private void addReferencedAnnotations(Collection<AlvisAEAnnotation> result, Collection<SourceAnnotation> sources) {
-			for (SourceAnnotation s : sources) {
-				result.add(s.getAnnotation());
+		private void addReferencedAnnotations(Collection<String> result, Collection<SourceAnnotationReference> sourceRefs) {
+			for (SourceAnnotationReference ref : sourceRefs) {
+				result.add(ref.getAnnotationId());
 			}
 		}
 		
-		private Collection<AlvisAEAnnotation> getReferencedAnnotations() {
-			Collection<AlvisAEAnnotation> result = new HashSet<AlvisAEAnnotation>();
+		private Collection<String> getReferencedAnnotations() {
+			Collection<String> result = new HashSet<String>();
 			for (AlvisAEAnnotation a : aSetAdj.getAnnotations()) {
-				addReferencedAnnotations(result, a.getSources());
+				addReferencedAnnotations(result, a.getSourceReferences());
 			}
-			addReferencedAnnotations(result, aSetAdj.getUnmatched());
+			addReferencedAnnotations(result, aSetAdj.getUnmatchedReferences());
 			return result;
 		}
 	}
@@ -72,7 +78,7 @@ public class AdjudicationStrayAnnotations extends CLIOParser {
 	private void run(Connection connection) throws SQLException, ParseException {
 		AlvisAEDocument doc = load(connection);
 		AnnotationSetDispatch aSets = new AnnotationSetDispatch(doc);
-		Collection<AlvisAEAnnotation> referencedAnnotations = aSets.getReferencedAnnotations();
+		Collection<String> referencedAnnotations = aSets.getReferencedAnnotations();
 		checkAnnotations(referencedAnnotations, aSets.aSet1);
 		checkAnnotations(referencedAnnotations, aSets.aSet2);
 	}
@@ -102,12 +108,24 @@ public class AdjudicationStrayAnnotations extends CLIOParser {
 		return campaign.getDocuments().iterator().next();
 	}
 
-	private static void checkAnnotations(Collection<AlvisAEAnnotation> referencedAnnotations, AnnotationSet aset) {
+	private static void checkAnnotations(Collection<String> referencedAnnotations, AnnotationSet aset) {
 		System.out.format("Checking annotations from %s (%s, id: %d)\n", aset.getUser(), aset.getTask(), aset.getId());
-		PrintAnnotation pa = new PrintAnnotation(System.out);
-		for (AlvisAEAnnotation ann : aset.getAnnotations()) {
-			if (!referencedAnnotations.contains(ann)) {
-				ann.accept(pa, "    ");
+		PrintAnnotation pa = new PrintAnnotation(System.out, 40);
+		List<TextBound> tbs = new ArrayList<TextBound>(aset.getTextBounds());
+		tbs.sort(TextBound.COMPARATOR);
+		for (TextBound tb : tbs) {
+			if (!referencedAnnotations.contains(tb.getId())) {
+				pa.visit(tb, "    ");
+			}
+		}
+		for (Group grp : aset.getGroups()) {
+			if (!referencedAnnotations.contains(grp.getId())) {
+				pa.visit(grp, "    ");
+			}
+		}
+		for (Relation rel : aset.getRelations()) {
+			if (!referencedAnnotations.contains(rel.getId())) {
+				pa.visit(rel, "    ");
 			}
 		}
 	}

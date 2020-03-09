@@ -109,6 +109,9 @@ public class AlvisAEDocument {
 	
 	public SourceAnnotation resolveSourceAnnotation(SourceAnnotationReference ref) {
 		AnnotationSet aSet = resolveAnnotationSet(ref.getAnnotationSetId());
+		if (aSet == null) {
+			throw new RuntimeException("annotation set '"+ref.getAnnotationSetId()+"' was not loaded");
+		}
 		AlvisAEAnnotation annotation = aSet.resolveAnnotation(ref.getAnnotationId());
 		return new SourceAnnotation(annotation, ref.getStatus());
 	}
@@ -119,7 +122,7 @@ public class AlvisAEDocument {
 				return aSet;
 			}
 		}
-		throw new RuntimeException();
+		return null;
 	}
 	
 	public final Mapper<SourceAnnotationReference,SourceAnnotation> SOURCE_ANNOTATION_RESOLVER = new Mapper<SourceAnnotationReference,SourceAnnotation>() {

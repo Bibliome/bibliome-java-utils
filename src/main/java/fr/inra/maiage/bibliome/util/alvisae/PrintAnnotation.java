@@ -6,12 +6,14 @@ import fr.inra.maiage.bibliome.util.fragments.Fragment;
 
 public class PrintAnnotation implements AnnotationVisitor<Void,String> {
 	private final PrintStream out;
+	private final int formWindowSize;
 
-	public PrintAnnotation(PrintStream out) {
+	public PrintAnnotation(PrintStream out, int formWindowSize) {
 		super();
 		this.out = out;
+		this.formWindowSize = formWindowSize;
 	}
-	
+
 	private String preamble(AlvisAEAnnotation ann, String indent, String kind) {
 		out.format("%s%s %s (%s)\n", indent, kind, ann.getType(), ann.getId());
 		return indent + "    ";
@@ -20,9 +22,17 @@ public class PrintAnnotation implements AnnotationVisitor<Void,String> {
 	@Override
 	public Void visit(TextBound tb, String indent) {
 		indent = preamble(tb, indent, "Text-Bound");
-		float len = tb.getDocument().getContents().length();
+		String contents = tb.getDocument().getContents();
+		float len = contents.length();
 		for (Fragment frag : tb.getFragments()) {
-			out.format("%s%d-%d (%.2f-%.2f)\n", indent, frag.getStart(), frag.getEnd(), (frag.getStart() / len), (frag.getEnd() / len));
+			int start = frag.getStart();
+			int end = frag.getEnd();
+			out.format("%s%d-%d (%.2f-%.2f) \"%s\"\n", indent, start, end, (start / len), (end / len), contents.substring(start, end));
+			if (formWindowSize > 0) {
+				int before = Math.max(0, start - formWindowSize);
+				int after = Math.min((int) len, end + formWindowSize);
+				out.format("%s%s\u001B[31m%s\u001B[0m%s\n", indent, contents.substring(before, start), contents.substring(start, end), contents.substring(end, after));
+			}
 		}
 		return null;
 	}
@@ -44,21 +54,5 @@ public class PrintAnnotation implements AnnotationVisitor<Void,String> {
 			rel.getArgument(role).accept(this, indent);
 		}
 		return null;
-	}
-	
-	public static void print(PrintStream out, AlvisAEAnnotation ann, String indent) {
-		ann.accept(new PrintAnnotation(out), indent);
-	}
-	
-	public static void print(PrintStream out, AlvisAEAnnotation ann) {
-		print(out, ann, "");
-	}
-	
-	public static void print(AlvisAEAnnotation ann, String indent) {
-		print(System.out, ann, indent);
-	}
-	
-	public static void print(AlvisAEAnnotation ann) {
-		print(System.out, ann, "");
 	}
 }
