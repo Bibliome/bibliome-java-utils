@@ -22,6 +22,10 @@
       <url>http://bibliome.jouy.inra.fr/maven-repository</url>
     </repository>
   </repositories>
+  
+  <scm>
+    <developerConnection>scm:git:https://github.com/Bibliome/bibliome-java-utils.git</developerConnection>
+  </scm>
 
   <build>
     <plugins>
@@ -100,9 +104,20 @@
           </execution>
         </executions>
       </plugin>
+        
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-release-plugin</artifactId>
+	<version>3.0.0-M1</version>
+	<configuration>
+	  <updateDependencies>false</updateDependencies>
+	  <autoVersionSubmodules>true</autoVersionSubmodules>
+	  <tagNameFormat>@{project.version}</tagNameFormat>
+	</configuration>
+      </plugin>
     </plugins>
   </build>
-
+  
   <dependencies>
     <dependency>
       <groupId>org.obo</groupId>
