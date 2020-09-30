@@ -8,12 +8,13 @@ import java.net.URISyntaxException;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
@@ -24,6 +25,7 @@ import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.BytesRef;
 
 import fr.inra.maiage.bibliome.util.clio.CLIOException;
 import fr.inra.maiage.bibliome.util.clio.CLIOParser;
@@ -40,7 +42,7 @@ public class PubMedIndexSearcher extends CLIOParser {
 	private static final String XML_FOOTER = "</PubmedArticleSet>";
 	private static final CharSequence BATCH_NUMBER_PLACEHOLDER = "%%";
 
-	private BooleanQuery query = new BooleanQuery();
+	private BooleanQuery.Builder queryBuilder = new BooleanQuery.Builder();
 	private File indexDir = null;
 	private int batchSize = Integer.MAX_VALUE;
 	private String outputBaseFormat = ".";
@@ -51,9 +53,9 @@ public class PubMedIndexSearcher extends CLIOParser {
 	protected boolean processArgument(String arg) throws CLIOException {
 		try {
 			Analyzer analyzer = PubMedIndexUtils.getGlobalAnalyzer();
-			QueryParser parser = new QueryParser(PubMedIndexUtils.LUCENE_VERSION, PubMedIndexField.ABSTRACT.fieldName, analyzer);
+			QueryParser parser = new QueryParser(PubMedIndexField.ABSTRACT.fieldName, analyzer);
 			parser.setDefaultOperator(QueryParser.AND_OPERATOR);
-			parser.setLowercaseExpandedTerms(false);
+			//XXX parser.setLowercaseExpandedTerms(false);
 			PubMedIndexUtils.log("parsing query: %s", arg);
 			Query q = parser.parse(arg);
 			PubMedIndexUtils.log("query: %s", q);
@@ -66,7 +68,7 @@ public class PubMedIndexSearcher extends CLIOParser {
 	}
 	
 	private void addClause(Query q) {
-		query.add(q, Occur.MUST);
+		queryBuilder.add(q, Occur.MUST);
 	}
 
 	@Override
@@ -130,7 +132,7 @@ public class PubMedIndexSearcher extends CLIOParser {
 	}
 
 	private void addListQuery(String location, PubMedIndexField field, QueryFactory queryFactory) throws IOException, URISyntaxException {
-		BooleanQuery booleanQuery = new BooleanQuery();
+		BooleanQuery.Builder booleanQueryBuilder = new BooleanQuery.Builder();
 		StreamFactory streamFactory = new StreamFactory();
 		SourceStream source = streamFactory.getSourceStream(location);
 		try (BufferedReader r = source.getBufferedReader()) {
@@ -140,15 +142,15 @@ public class PubMedIndexSearcher extends CLIOParser {
 					break;
 				}
 				Query q = queryFactory.createQuery(field, line.trim());
-				booleanQuery.add(q, Occur.SHOULD);
+				booleanQueryBuilder.add(q, Occur.SHOULD);
 			}
 		}
-		addClause(booleanQuery);
+		addClause(booleanQueryBuilder.build());
 	}
 
 	@CLIOption("-after")
 	public void addRevisionDate(String date) {
-		Query q = new TermRangeQuery(PubMedIndexField.DATE_REVISED.fieldName, date, "9", true, false);
+		Query q = new TermRangeQuery(PubMedIndexField.DATE_REVISED.fieldName, new BytesRef(date), new BytesRef("9"), true, false);
 		addClause(q);
 	}
 
@@ -173,19 +175,18 @@ public class PubMedIndexSearcher extends CLIOParser {
 	}
 
 	private void search() throws IOException {		
-		Directory dir = FSDirectory.open(indexDir);
-		try (IndexReader indexReader = IndexReader.open(dir)) {
-			try (IndexSearcher indexSearcher = new IndexSearcher(indexReader)) {
-				TopDocs topDocs = indexSearcher.search(query, Integer.MAX_VALUE);
-				PubMedIndexUtils.log("found %d hits", topDocs.totalHits);
-				output(indexReader, topDocs);
-				PubMedIndexUtils.log("done");
-			}
+		Directory dir = FSDirectory.open(indexDir.toPath());
+		try (IndexReader indexReader = DirectoryReader.open(dir)) {
+			IndexSearcher indexSearcher = new IndexSearcher(indexReader);
+			TopDocs topDocs = indexSearcher.search(queryBuilder.build(), Integer.MAX_VALUE);
+			PubMedIndexUtils.log("found %d hits", topDocs.totalHits);
+			output(indexReader, topDocs);
+			PubMedIndexUtils.log("done");
 		}
 	}
 	
 	private void output(IndexReader indexReader, TopDocs topDocs) throws CorruptIndexException, IOException {
-		int nBatches = 1 + (topDocs.totalHits / batchSize);
+		long nBatches = 1 + (topDocs.totalHits.value / batchSize);
 		String batchNumberFormat = getBatchNumberFormat(nBatches);
 		String outputBaseFormat = createFormatString(this.outputBaseFormat, batchNumberFormat);
 		String pmidOutputFormat = createFormatString(this.pmidOutputFormat, batchNumberFormat);
@@ -203,7 +204,7 @@ public class PubMedIndexSearcher extends CLIOParser {
 		return format.replace(BATCH_NUMBER_PLACEHOLDER, batchNumberFormat);
 	}
 	
-	private static String getBatchNumberFormat(int nBatches) {
+	private static String getBatchNumberFormat(long nBatches) {
 		double nLog = Math.log10(nBatches);
 		int nDigits = Math.max((int) Math.ceil(nLog), 1);
 		return String.format("%%0%dd", nDigits);
@@ -212,11 +213,11 @@ public class PubMedIndexSearcher extends CLIOParser {
 	private void outputBatch(IndexReader indexReader, TopDocs topDocs, int batch, String outputBaseFormat, String pmidOutputFormat, String xmlOutputFormat) throws CorruptIndexException, IOException {
 		String outputBasePath = String.format(outputBaseFormat, batch);
 		OutputDirectory outputBaseDir = new OutputDirectory(outputBasePath);
-		int start = batch * batchSize;
-		int end = Math.min(start + batchSize, topDocs.totalHits);
+		long start = batch * batchSize;
+		long end = Math.min(start + batchSize, topDocs.totalHits.value);
 		if (pmidOutputFormat != null) {
 			try (PrintStream out = open(batch, outputBaseDir, pmidOutputFormat)) {
-				for (int d = start; d < end; ++d) {
+				for (long d = start; d < end; ++d) {
 					outputBatchDocument(indexReader, topDocs, out, PubMedIndexField.PMID, d);
 				}
 			}
@@ -224,7 +225,7 @@ public class PubMedIndexSearcher extends CLIOParser {
 		if (xmlOutputFormat != null) {
 			try (PrintStream out = open(batch, outputBaseDir, xmlOutputFormat)) {
 				out.println(XML_HEADER);
-				for (int d = start; d < end; ++d) {
+				for (long d = start; d < end; ++d) {
 					outputBatchDocument(indexReader, topDocs, out, PubMedIndexField.XML, d);
 				}
 				out.println(XML_FOOTER);
@@ -240,10 +241,10 @@ public class PubMedIndexSearcher extends CLIOParser {
 		return target.getPrintStream();
 	}
 
-	private static void outputBatchDocument(IndexReader indexReader, TopDocs topDocs, PrintStream out, PubMedIndexField pubmedField, int d) throws CorruptIndexException, IOException {
-		int docId = topDocs.scoreDocs[d].doc;
+	private static void outputBatchDocument(IndexReader indexReader, TopDocs topDocs, PrintStream out, PubMedIndexField pubmedField, long d) throws CorruptIndexException, IOException {
+		int docId = topDocs.scoreDocs[(int) d].doc;
 		Document doc = indexReader.document(docId);
-		Fieldable field = doc.getFieldable(pubmedField.fieldName);
+		IndexableField field = doc.getField(pubmedField.fieldName);
 		String value = field.stringValue();
 		out.println(value);
 	}
@@ -254,7 +255,8 @@ public class PubMedIndexSearcher extends CLIOParser {
 		if (inst.parse(args)) {
 			return;
 		}
-		if (inst.query.clauses().isEmpty()) {
+		BooleanQuery query = inst.queryBuilder.build();
+		if (query.clauses().isEmpty()) {
 			throw new CLIOException("missing query");
 		}
 		if (inst.indexDir == null) {

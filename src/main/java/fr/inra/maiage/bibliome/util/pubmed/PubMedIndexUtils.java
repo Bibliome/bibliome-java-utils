@@ -7,14 +7,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.KeywordAnalyzer;
-import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
-import org.apache.lucene.util.Version;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 
 public enum PubMedIndexUtils {
 	;
-
-	public static final Version LUCENE_VERSION = Version.LUCENE_36;
 
 	public static Analyzer getGlobalAnalyzer() {
 		Map<String,Analyzer> fieldAnalyzers = new HashMap<String,Analyzer>();

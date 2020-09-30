@@ -289,13 +289,13 @@ public class PubMedIndexUpdater extends CLIOParser {
 
 	private static IndexWriterConfig getIndexWriterConfig() {
 		Analyzer analyzer = PubMedIndexUtils.getGlobalAnalyzer();
-		IndexWriterConfig result = new IndexWriterConfig(PubMedIndexUtils.LUCENE_VERSION, analyzer);
+		IndexWriterConfig result = new IndexWriterConfig(analyzer);
 		result.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
 		return result;
 	}
 	
 	private static IndexWriter openIndexWriter(File indexPath) throws IOException {
-		Directory dir = FSDirectory.open(indexPath);
+		Directory dir = FSDirectory.open(indexPath.toPath());
 		IndexWriterConfig config = getIndexWriterConfig();
 		return new IndexWriter(dir, config);
 	}
