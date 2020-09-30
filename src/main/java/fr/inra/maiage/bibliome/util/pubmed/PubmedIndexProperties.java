@@ -7,10 +7,13 @@ import java.util.LinkedHashSet;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Fieldable;
+import org.apache.lucene.document.StoredField;
+import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -29,9 +32,9 @@ public class PubmedIndexProperties {
 	public PubmedIndexProperties(IndexSearcher indexSearcher) throws IOException {
 		Query query = new TermQuery(GLOBAL_PROPERTIES_TERM);
 		TopDocs topDocs = indexSearcher.search(query, 1);
-		if (topDocs.totalHits < 1) {
+		if (topDocs.totalHits.value < 1) {
 			this.doc = new Document();
-			Field globalPropertiesField = new Field(GLOBAL_PROPERTIES_FIELD, GLOBAL_PROPERTIES_VALUE, Field.Store.YES, Field.Index.NOT_ANALYZED);
+			Field globalPropertiesField = new StringField(GLOBAL_PROPERTIES_FIELD, GLOBAL_PROPERTIES_VALUE, Field.Store.YES);
 			this.doc.add(globalPropertiesField);
 		}
 		else {
@@ -45,7 +48,7 @@ public class PubmedIndexProperties {
 	}
 	
 	public PubmedIndexProperties(IndexWriter indexWriter) throws CorruptIndexException, IOException {
-		this(IndexReader.open(indexWriter, true));
+		this(DirectoryReader.open(indexWriter));
 	}
 	
 	private void ensureIndxedFiles() {
@@ -53,7 +56,7 @@ public class PubmedIndexProperties {
 			return;
 		}
 		indexedFiles = new LinkedHashSet<String>();
-		for (Fieldable f : doc.getFieldables(INDEXED_FILE_FIELD)) {
+		for (IndexableField f : doc.getFields(INDEXED_FILE_FIELD)) {
 			String v = f.stringValue();
 			indexedFiles.add(v);
 		}
@@ -67,7 +70,7 @@ public class PubmedIndexProperties {
 	public void addIndexedFile(String fileName) {
 		ensureIndxedFiles();
 		indexedFiles.add(fileName);
-		Field indexedFileField = new Field(INDEXED_FILE_FIELD, fileName, Field.Store.YES, Field.Index.NO);
+		Field indexedFileField = new StoredField(INDEXED_FILE_FIELD, fileName);
 		doc.add(indexedFileField);
 	}
 	

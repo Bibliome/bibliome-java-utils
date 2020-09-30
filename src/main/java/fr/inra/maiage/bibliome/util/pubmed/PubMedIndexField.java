@@ -1,7 +1,6 @@
 package fr.inra.maiage.bibliome.util.pubmed;
 
 import java.io.StringWriter;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -20,9 +19,13 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.KeywordAnalyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.StoredField;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.TextField;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -40,6 +43,11 @@ public enum PubMedIndexField {
 		@Override
 		protected Analyzer getAnalyzer() {
 			return new KeywordAnalyzer();
+		}
+		
+		@Override
+		protected Field createField(String fieldValue) {
+			return new StringField(fieldName, fieldValue, Field.Store.YES);
 		}
 
 		@Override
@@ -64,6 +72,11 @@ public enum PubMedIndexField {
 		protected Analyzer getAnalyzer() {
 			return new KeywordAnalyzer();
 		}
+		
+		@Override
+		protected Field createField(String fieldValue) {
+			return new StringField(fieldName, fieldValue, Field.Store.YES);
+		}
 
 		@Override
 		public boolean isIndexed() {
@@ -87,6 +100,11 @@ public enum PubMedIndexField {
 		protected Analyzer getAnalyzer() {
 			return new KeywordAnalyzer();
 		}
+		
+		@Override
+		protected Field createField(String fieldValue) {
+			return new StringField(fieldName, fieldValue, Field.Store.YES);
+		}
 
 		@Override
 		public boolean isIndexed() {
@@ -109,6 +127,11 @@ public enum PubMedIndexField {
 		@Override
 		protected Analyzer getAnalyzer() {
 			return new KeywordAnalyzer();
+		}
+		
+		@Override
+		protected Field createField(String fieldValue) {
+			return new StringField(fieldName, fieldValue, Field.Store.YES);
 		}
 
 		@Override
@@ -134,6 +157,11 @@ public enum PubMedIndexField {
 		@Override
 		protected Analyzer getAnalyzer() {
 			return new KeywordAnalyzer();
+		}
+		
+		@Override
+		protected Field createField(String fieldValue) {
+			return new StringField(fieldName, fieldValue, Field.Store.NO);
 		}
 
 		@Override
@@ -164,6 +192,11 @@ public enum PubMedIndexField {
 		protected Analyzer getAnalyzer() {
 			return new KeywordAnalyzer();
 		}
+		
+		@Override
+		protected Field createField(String fieldValue) {
+			return new StringField(fieldName, fieldValue, Field.Store.NO);
+		}
 
 		@Override
 		public boolean isIndexed() {
@@ -185,7 +218,12 @@ public enum PubMedIndexField {
 
 		@Override
 		protected Analyzer getAnalyzer() {
-			return new StandardAnalyzer(PubMedIndexUtils.LUCENE_VERSION);
+			return new StandardAnalyzer(EnglishAnalyzer.ENGLISH_STOP_WORDS_SET);
+		}
+		
+		@Override
+		protected Field createField(String fieldValue) {
+			return new TextField(fieldName, fieldValue, Field.Store.NO);
 		}
 
 		@Override
@@ -210,7 +248,12 @@ public enum PubMedIndexField {
 
 		@Override
 		protected Analyzer getAnalyzer() {
-			return new StandardAnalyzer(PubMedIndexUtils.LUCENE_VERSION);
+			return new StandardAnalyzer(EnglishAnalyzer.ENGLISH_STOP_WORDS_SET);
+		}
+		
+		@Override
+		protected Field createField(String fieldValue) {
+			return new TextField(fieldName, fieldValue, Field.Store.NO);
 		}
 
 		@Override
@@ -237,6 +280,11 @@ public enum PubMedIndexField {
 		protected Analyzer getAnalyzer() {
 			return new KeywordAnalyzer();
 		}
+		
+		@Override
+		protected Field createField(String fieldValue) {
+			return new StringField(fieldName, fieldValue, Field.Store.NO);
+		}
 
 		@Override
 		public boolean isIndexed() {
@@ -262,6 +310,11 @@ public enum PubMedIndexField {
 		protected Analyzer getAnalyzer() {
 			return new KeywordAnalyzer();
 		}
+		
+		@Override
+		protected Field createField(String fieldValue) {
+			return new StringField(fieldName, fieldValue, Field.Store.NO);
+		}
 
 		@Override
 		public boolean isIndexed() {
@@ -286,6 +339,11 @@ public enum PubMedIndexField {
 		@Override
 		protected Analyzer getAnalyzer() {
 			return new KeywordAnalyzer();
+		}
+		
+		@Override
+		protected Field createField(String fieldValue) {
+			return new StringField(fieldName, fieldValue, Field.Store.NO);
 		}
 
 		@Override
@@ -319,6 +377,11 @@ public enum PubMedIndexField {
 		protected Analyzer getAnalyzer() {
 			return new KeywordAnalyzer();
 		}
+		
+		@Override
+		protected Field createField(String fieldValue) {
+			return new StringField(fieldName, fieldValue, Field.Store.NO);
+		}
 
 		@Override
 		public boolean isIndexed() {
@@ -342,6 +405,11 @@ public enum PubMedIndexField {
 		protected Analyzer getAnalyzer() {
 			return new KeywordAnalyzer();
 		}
+		
+		@Override
+		protected Field createField(String fieldValue) {
+			return new StringField(fieldName, fieldValue, Field.Store.NO);
+		}
 
 		@Override
 		public boolean isIndexed() {
@@ -363,7 +431,12 @@ public enum PubMedIndexField {
 
 		@Override
 		protected Analyzer getAnalyzer() {
-			return new StandardAnalyzer(PubMedIndexUtils.LUCENE_VERSION);
+			return new StandardAnalyzer(EnglishAnalyzer.ENGLISH_STOP_WORDS_SET);
+		}
+		
+		@Override
+		protected Field createField(String fieldValue) {
+			return new TextField(fieldName, fieldValue, Field.Store.NO);
 		}
 
 		@Override
@@ -388,7 +461,12 @@ public enum PubMedIndexField {
 
 		@Override
 		protected Analyzer getAnalyzer() {
-			return new StandardAnalyzer(PubMedIndexUtils.LUCENE_VERSION, Collections.EMPTY_SET);
+			return new StandardAnalyzer();
+		}
+		
+		@Override
+		protected Field createField(String fieldValue) {
+			return new TextField(fieldName, fieldValue, Field.Store.NO);
 		}
 
 		@Override
@@ -411,6 +489,11 @@ public enum PubMedIndexField {
 		@Override
 		protected Analyzer getAnalyzer() {
 			return new KeywordAnalyzer();
+		}
+		
+		@Override
+		protected Field createField(String fieldValue) {
+			return new StringField(fieldName, fieldValue, Field.Store.YES);
 		}
 
 		@Override
@@ -473,6 +556,11 @@ public enum PubMedIndexField {
 		protected Analyzer getAnalyzer() {
 			return new KeywordAnalyzer();
 		}
+		
+		@Override
+		protected Field createField(String fieldValue) {
+			return new StringField(fieldName, fieldValue, Field.Store.NO);
+		}
 
 		@Override
 		public boolean isIndexed() {
@@ -494,6 +582,11 @@ public enum PubMedIndexField {
 		@Override
 		protected Analyzer getAnalyzer() {
 			return new KeywordAnalyzer();
+		}
+		
+		@Override
+		protected Field createField(String fieldValue) {
+			return new StringField(fieldName, fieldValue, Field.Store.NO);
 		}
 
 		@Override
@@ -522,6 +615,11 @@ public enum PubMedIndexField {
 		@Override
 		protected Analyzer getAnalyzer() {
 			return new KeywordAnalyzer();
+		}
+		
+		@Override
+		protected Field createField(String fieldValue) {
+			return new StoredField(fieldName, fieldValue);
 		}
 
 		@Override
@@ -560,17 +658,18 @@ public enum PubMedIndexField {
 	
 	protected abstract Analyzer getAnalyzer();
 	
+	protected abstract Field createField(String fieldValue);
+	
 	public abstract boolean isIndexed();
 	
+	@Deprecated
 	public abstract boolean isStored();
 	
 	protected void addField(org.apache.lucene.document.Document doc, String fieldValue) {
 		if (fieldValue == null || fieldValue.isEmpty()) {
 			return;
 		}
-		Field.Store store = isStored() ? Field.Store.YES : Field.Store.NO;
-		Field.Index index = isIndexed() ? Field.Index.ANALYZED : Field.Index.NO;
-		Field field = new Field(fieldName, fieldValue, store, index, Field.TermVector.NO);
+		Field field = createField(fieldValue);
 		doc.add(field);
 	}
 	
