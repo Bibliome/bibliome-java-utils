@@ -58,9 +58,12 @@ public class NCBITaxonomy {
 	}
 
 	private String buildTaxid(String rawId) {
-		return String.format("%s%s", idPrefix, rawId);
+		if (rawId.indexOf(':') == -1) {
+			return String.format("%s%s", idPrefix, rawId);
+		}
+		return rawId;
 	}
-	
+
 	private final class NodesFileLines extends DmpFileLines<Map<String,String>> {
 		private final StringCache rankCache = new StringCache();
 		
@@ -82,7 +85,7 @@ public class NCBITaxonomy {
 	private void addTaxon(Taxon taxon) {
 		String id = taxon.getTaxid();
 		if (taxa.containsKey(id))
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("duplicate taxid: " + id);
 		taxa.put(id, taxon);
 	}
 	
@@ -100,10 +103,18 @@ public class NCBITaxonomy {
 		fl.setLogger(logger);
 		Map<String,String> parent = new HashMap<String,String>();
 		fl.process(file, DmpFileLines.CHARSET, parent);
-		for (Taxon taxon : taxa.values()) {
-			String taxid = taxon.getTaxid();
-			String parentId = parent.get(taxid);
-			taxon.setParent(taxa.get(taxid == parentId ? null : parentId));
+		//System.err.println(parent);
+		for (Map.Entry<String,String> e : parent.entrySet()) {
+			String taxid = e.getKey();
+			String parentId = e.getValue();
+			Taxon taxon = taxa.get(taxid);
+			Taxon p = taxa.get(parentId);
+			if (taxon.getParent() != null) {
+				throw new RuntimeException("already a parent " + taxid + ": " + parentId + " / " + taxon.getParent().getTaxid());
+			}
+			if (!taxid.equals(parentId)) {
+				taxon.setParent(p);
+			}
 		}
 	}
 	
@@ -123,6 +134,9 @@ public class NCBITaxonomy {
 		@Override
 		public void processEntry(NCBITaxonomy data, int lineno, List<String> entry)	throws InvalidFileLineEntry {
 			String id = buildTaxid(entry.get(0));
+			if (!data.taxa.containsKey(id)) {
+				throw new IllegalArgumentException("unknown taxid: " + id);
+			}
 			Taxon taxon = data.taxa.get(id);
 			taxon.addName(reject, entry.get(1), typeCache.get(entry.get(3)));
 		}

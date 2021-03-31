@@ -48,7 +48,7 @@ import fr.inra.maiage.bibliome.util.taxonomy.saturate.Saturate;
  *
  */
 public class BuildDictionary extends CLIOParser {
-	private File nodesFile;
+	private final Collection<File> nodesFiles = new ArrayList<File>();
 	private final Collection<File> namesFiles = new ArrayList<File>();
 	private File saturationFile;
 	private File rejectionFile;
@@ -68,9 +68,8 @@ public class BuildDictionary extends CLIOParser {
 
 	@Override
 	protected boolean processArgument(String arg) throws CLIOException {
-		if (nodesFile != null)
-			throw new CLIOException("Only one nodes file");
-		nodesFile = (File) convertArgument(File.class, arg);
+		File nodesFile = (File) convertArgument(File.class, arg);
+		nodesFiles.add(nodesFile);
 		return false;
 	}
 	
@@ -222,14 +221,17 @@ public class BuildDictionary extends CLIOParser {
 				System.exit(1);
 		}
 		NCBITaxonomy taxonomy = new NCBITaxonomy(inst.idPrefix);
-		taxonomy.readNodes(logger, inst.nodesFile);
+		for (File nodesFile : inst.nodesFiles) {
+			taxonomy.readNodes(logger, nodesFile);
+		}
 		
 		/* Name filter and synonym generation */
 		RejectName reject = RejectNone.INSTANCE;
 		if (inst.rejectionFile != null)
 			reject = new RejectDisjunction(taxonomy.readReject(logger, inst.rejectionFile));
-		for (File f : inst.namesFiles)
+		for (File f : inst.namesFiles) {
 			taxonomy.readNames(logger, f, reject);
+		}
 		if (inst.saturationFile != null)
 			for (Saturate sat : NCBITaxonomy.readSaturate(logger, inst.saturationFile))
 				taxonomy.saturate(reject, sat);
