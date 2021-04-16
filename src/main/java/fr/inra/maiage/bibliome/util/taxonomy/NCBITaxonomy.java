@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import fr.inra.maiage.bibliome.util.filelines.FileLines;
@@ -192,34 +193,44 @@ public class NCBITaxonomy {
 	 * @param file
 	 * @throws IOException
 	 */
-	public Collection<RejectName> readReject(Logger logger, File file) throws IOException {
+	public Collection<RejectName> readReject(Logger logger, File file, Collection<RejectName> result) throws IOException {
 		logger.info("reading rejection file: " + file.getCanonicalPath());
-		Collection<RejectName> result = new ArrayList<RejectName>();
 		InputFile inputFile = new InputFile(file.getCanonicalPath());
 		SourceStream source = new FileSourceStream(DmpFileLines.CHARSET, inputFile);
 		BufferedReader r = source.getBufferedReader();
 		while (true) {
 			String line = r.readLine();
-			if (line == null)
+			if (line == null) {
 				break;
+			}
 			line = line.trim();
-			if (line.isEmpty())
+			if (line.isEmpty()) {
 				continue;
+			}
+			if (line.charAt(0) == '#') {
+				continue;
+			}
 			result.add(getReject(line));
 		}
 		return result;
 	}
 
+	public Collection<RejectName> readReject(Logger logger, File file) throws IOException {
+		return readReject(logger, file, new ArrayList<RejectName>());
+	}
+	
+	private static final Pattern TAXID_WITH_PREFIX = Pattern.compile("[A-Z_a-z]+:\\d+");
+	
 	private RejectName getReject(String line) {
 		int tab = line.indexOf('\t');
-		if (tab >= 0)
+		if (tab >= 0) {
 			return new RejectConjunction(getReject(line.substring(0, tab)), getReject(line.substring(tab+1)));
-		try {
-			return new RejectTaxid(buildTaxid(line));
 		}
-		catch (NumberFormatException nfe) {
-			return new RejectNamePattern(Pattern.compile(line));
+		Matcher m = TAXID_WITH_PREFIX.matcher(line);
+		if (m.matches()) {
+			return new RejectTaxid(line);
 		}
+		return new RejectNamePattern(Pattern.compile(line));
 	}
 	
 	private static class SaturateFileLines extends FileLines<Collection<Saturate>> {
