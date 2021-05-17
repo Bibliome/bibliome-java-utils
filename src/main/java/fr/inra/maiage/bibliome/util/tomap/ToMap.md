@@ -92,7 +92,7 @@ Think of it as a list of tokens that will be ignored in *Step 2*.
 
 The search for a significant component can walk down modifiers only, or head and modifiers.
 
-It is recommended to search only through modifiers for both candidate terms and proxy terms.
+It is recommended to search through modifiers and head for both candidate terms and proxy terms.
 
 ### Term distance
 
