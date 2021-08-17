@@ -38,4 +38,17 @@ public class RejectConjunction extends Pair<RejectName,RejectName> implements Re
 	public boolean reject(String taxid, Name name) {
 		return first.reject(taxid, name) && second.reject(taxid, name);
 	}
+
+	@Override
+	public RejectName simplify() {
+		RejectName first = this.first.simplify();
+		RejectName second = this.second.simplify();
+		if (first.equals(RejectNone.INSTANCE)) {
+			return RejectNone.INSTANCE;
+		}
+		if (second.equals(RejectNone.INSTANCE)) {
+			return RejectNone.INSTANCE;
+		}
+		return new RejectConjunction(first, second);
+	}
 }

@@ -39,7 +39,7 @@ import fr.inra.maiage.bibliome.util.taxonomy.Name;
 import fr.inra.maiage.bibliome.util.taxonomy.Taxon;
 import fr.inra.maiage.bibliome.util.taxonomy.reject.RejectDisjunction;
 import fr.inra.maiage.bibliome.util.taxonomy.reject.RejectName;
-import fr.inra.maiage.bibliome.util.taxonomy.reject.RejectNone;
+import fr.inra.maiage.bibliome.util.taxonomy.reject.RejectNameType;
 import fr.inra.maiage.bibliome.util.taxonomy.saturate.Saturate;
 
 /**
@@ -50,6 +50,7 @@ import fr.inra.maiage.bibliome.util.taxonomy.saturate.Saturate;
 public class BuildDictionary extends CLIOParser {
 	private final Collection<File> nodesFiles = new ArrayList<File>();
 	private final Collection<File> namesFiles = new ArrayList<File>();
+	private final Collection<String> rejectedNameTypes = new ArrayList<String>();
 	private File saturationFile;
 	private File rejectionFile;
 	private final List<TaxonNamePattern> pattern = new ArrayList<TaxonNamePattern>(Arrays.asList(
@@ -71,6 +72,11 @@ public class BuildDictionary extends CLIOParser {
 		File nodesFile = (File) convertArgument(File.class, arg);
 		nodesFiles.add(nodesFile);
 		return false;
+	}
+	
+	@CLIOption("-rejectNameType")
+	public void addRejectedNameType(String nameType) {
+		this.rejectedNameTypes.add(nameType);
 	}
 	
 	@CLIOption("-prefix")
@@ -226,9 +232,14 @@ public class BuildDictionary extends CLIOParser {
 		}
 		
 		/* Name filter and synonym generation */
-		RejectName reject = RejectNone.INSTANCE;
-		if (inst.rejectionFile != null)
-			reject = new RejectDisjunction(taxonomy.readReject(logger, inst.rejectionFile));
+		RejectDisjunction rejects = new RejectDisjunction();
+		if (inst.rejectionFile != null) {
+			rejects.add(taxonomy.readReject(logger, inst.rejectionFile));
+		}
+		if (!inst.rejectedNameTypes.isEmpty()) {
+			rejects.add(new RejectNameType(inst.rejectedNameTypes));
+		}
+		RejectName reject = rejects.simplify();
 		for (File f : inst.namesFiles) {
 			taxonomy.readNames(logger, f, reject);
 		}

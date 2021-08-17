@@ -39,4 +39,9 @@ public class RejectTaxid implements RejectName {
 	public boolean reject(String taxid, Name name) {
 		return this.taxid.equals(taxid);
 	}
+
+	@Override
+	public RejectName simplify() {
+		return this;
+	}
 }

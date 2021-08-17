@@ -41,4 +41,9 @@ public class RejectNamePattern implements RejectName {
 	public boolean reject(String taxid, Name name) {
 		return pattern.matcher(name.name).matches();
 	}
+
+	@Override
+	public RejectName simplify() {
+		return this;
+	}
 }

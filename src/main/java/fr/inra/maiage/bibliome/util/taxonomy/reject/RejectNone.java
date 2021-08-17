@@ -18,15 +18,16 @@ package fr.inra.maiage.bibliome.util.taxonomy.reject;
 
 import fr.inra.maiage.bibliome.util.taxonomy.Name;
 
-public class RejectNone implements RejectName {
-	public static final RejectNone INSTANCE = new RejectNone();
-
-	private RejectNone() {
-		super();
-	}
+public enum RejectNone implements RejectName {
+	INSTANCE;
 
 	@Override
 	public boolean reject(String taxid, Name name) {
 		return false;
+	}
+
+	@Override
+	public RejectName simplify() {
+		return this;
 	}
 }

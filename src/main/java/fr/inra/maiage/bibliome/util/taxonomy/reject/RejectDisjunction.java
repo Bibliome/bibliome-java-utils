@@ -16,13 +16,19 @@ limitations under the License.
 
 package fr.inra.maiage.bibliome.util.taxonomy.reject;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import fr.inra.maiage.bibliome.util.taxonomy.Name;
 
 public class RejectDisjunction implements RejectName {
 	private final Collection<RejectName> rejects;
-
+	
+	public RejectDisjunction() {
+		this(new ArrayList<RejectName>());
+	}
+	
 	public RejectDisjunction(Collection<RejectName> rejects) {
 		super();
 		this.rejects = rejects;
@@ -34,5 +40,31 @@ public class RejectDisjunction implements RejectName {
 			if (reject.reject(taxid, name))
 				return true;
 		return false;
+	}
+	
+	public void add(RejectName reject) {
+		rejects.add(reject);
+	}
+	
+	public void add(Collection<RejectName> rejects) {
+		this.rejects.addAll(rejects);
+	}
+
+	@Override
+	public RejectName simplify() {
+		List<RejectName> rejects = new ArrayList<RejectName>(this.rejects.size());
+		for (RejectName rn : this.rejects) {
+			RejectName srn = rn.simplify();
+			if (!srn.equals(RejectNone.INSTANCE)) {
+				rejects.add(srn);
+			}
+		}
+		if (rejects.isEmpty()) {
+			return RejectNone.INSTANCE;
+		}
+		if (rejects.size() == 1) {
+			return rejects.get(0);
+		}
+		return new RejectDisjunction(rejects);
 	}
 }

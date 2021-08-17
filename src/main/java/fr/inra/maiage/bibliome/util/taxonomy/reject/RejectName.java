@@ -30,4 +30,6 @@ public interface RejectName {
 	 * @param name
 	 */
 	boolean reject(String taxid, Name name);
+	
+	RejectName simplify();
 }
