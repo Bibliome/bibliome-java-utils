@@ -150,7 +150,7 @@ public class Unmarshaller<T> extends AbstractMarshaller<T> implements Closeable 
 	public ByteBuffer getBuffer(long position) {
 		try {
 			long absPosition = startPosition + position;
-			long size = Math.min(channel.size() - absPosition, Integer.MAX_VALUE);
+			long size = 1024 * 1024;
 			return channel.map(MapMode.READ_ONLY, absPosition, size);
 		}
 		catch (IOException e) {
