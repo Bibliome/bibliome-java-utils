@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -70,6 +71,51 @@ public class OBOUtils {
 		for (Link link : term.getParents()) {
 			if (link.getType().equals(OBOProperty.IS_A)) {
 				for (StringBuilder path : getPaths(prefix, link.getParent())) {
+					path.append('/');
+					path.append(term.getID());
+					result.add(path);
+				}
+			}
+		}
+		if (result.isEmpty()) {
+			StringBuilder path = new StringBuilder();
+			if (prefix != null)
+				path.append(prefix);
+			path.append('/');
+			path.append(term.getID());
+			result.add(path);
+		}
+		return result;
+	}
+
+	public static Collection<StringBuilder> getPaths(CharSequence prefix, LinkedObject term, String[] linkSpecs) {
+		Collection<String> parentLinks = new HashSet<String>();
+		Collection<String> childrenLinks = new HashSet<String>();
+		for (String ls : linkSpecs) {
+			if (ls.charAt(0) == '~') {
+				childrenLinks.add(ls.substring(1));
+			}
+			else {
+				parentLinks.add(ls);
+			}
+		}
+		Collection<StringBuilder> result = new ArrayList<StringBuilder>(1);
+		for (Link link : term.getParents()) {
+			OBOProperty linkType = link.getType();
+			String linkTypeID = linkType.getName();
+			if (parentLinks.contains(linkTypeID)) {
+				for (StringBuilder path : getPaths(prefix, link.getParent())) {
+					path.append('/');
+					path.append(term.getID());
+					result.add(path);
+				}
+			}
+		}
+		for (Link link : term.getChildren()) {
+			OBOProperty linkType = link.getType();
+			String linkTypeID = linkType.getName();
+			if (childrenLinks.contains(linkTypeID)) {
+				for (StringBuilder path : getPaths(prefix, link.getChild())) {
 					path.append('/');
 					path.append(term.getID());
 					result.add(path);
