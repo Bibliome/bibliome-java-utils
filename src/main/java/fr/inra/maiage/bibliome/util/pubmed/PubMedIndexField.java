@@ -577,7 +577,6 @@ public enum PubMedIndexField {
 	private static Transformer getTransformer() throws TransformerConfigurationException {
 		TransformerFactory tf = TransformerFactory.newInstance();
 		Transformer result = tf.newTransformer();
-		result.setOutputProperty(OutputKeys.INDENT, "yes");
 		result.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 		return result;
 	}
