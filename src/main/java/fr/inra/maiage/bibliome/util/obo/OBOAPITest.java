@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.obo.dataadapter.OBOParseException;
 import org.obo.datamodel.Link;
 import org.obo.datamodel.OBOClass;
+import org.obo.datamodel.OBOProperty;
 import org.obo.datamodel.OBOSession;
 import org.obo.util.TermUtil;
 
@@ -17,8 +18,8 @@ public class OBOAPITest {
 			System.out.println("Term: " + term.getID());
 			System.out.println("  Name: " + term.getName());
 			System.out.println("  Old paths: " + OBOUtils.getPaths(term));
-			System.out.println("  New paths: " + OBOUtils.getPaths(null, term, new String[] { "is_a" }));
-			System.out.println("  Ext paths: " + OBOUtils.getPaths(null, term, new String[] { "is_a", "~trait_has_value" }));
+			System.out.println("  New paths: " + OBOUtils.getPaths(null, term, new String[] { OBOProperty.IS_A.getName() }));
+			System.out.println("  Ext paths: " + OBOUtils.getPaths(null, term, new String[] { OBOProperty.IS_A.getName(), "~trait_has_value" }));
 			System.out.println("  Parents:");
 			for (Link link : term.getParents()) {
 				System.out.println("    Link: " + link);

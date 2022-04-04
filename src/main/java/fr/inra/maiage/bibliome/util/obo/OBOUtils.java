@@ -45,10 +45,6 @@ import fr.inra.maiage.bibliome.util.mappers.Mapper;
 import fr.inra.maiage.bibliome.util.mappers.Mappers;
 
 public class OBOUtils {
-	public static Collection<StringBuilder> getPaths(LinkedObject term) {
-		return getPaths(null, term);
-	}
-	
 	public static Collection<LinkedObject> getAncestors(LinkedObject term, boolean includeSelf) {
 		return collectAncestors(new LinkedHashSet<LinkedObject>(), term, includeSelf);
 	}
@@ -66,28 +62,18 @@ public class OBOUtils {
 		return ancestors;
 	}
 
+	public static Collection<StringBuilder> getPaths(LinkedObject term) {
+		return getPaths(null, term);
+	}
+	
 	public static Collection<StringBuilder> getPaths(CharSequence prefix, LinkedObject term) {
-		Collection<StringBuilder> result = new ArrayList<StringBuilder>(1);
-		for (Link link : term.getParents()) {
-			if (link.getType().equals(OBOProperty.IS_A)) {
-				for (StringBuilder path : getPaths(prefix, link.getParent())) {
-					path.append('/');
-					path.append(term.getID());
-					result.add(path);
-				}
-			}
-		}
-		if (result.isEmpty()) {
-			StringBuilder path = new StringBuilder();
-			if (prefix != null)
-				path.append(prefix);
-			path.append('/');
-			path.append(term.getID());
-			result.add(path);
-		}
-		return result;
+		return getPaths(prefix, term, new String[] { OBOProperty.IS_A.getName() });
 	}
 
+	public static Collection<StringBuilder> getPaths(LinkedObject term, String[] linkSpecs) {
+		return getPaths(null, term, linkSpecs);
+	}
+	
 	public static Collection<StringBuilder> getPaths(CharSequence prefix, LinkedObject term, String[] linkSpecs) {
 		Collection<String> parentLinks = new HashSet<String>();
 		Collection<String> childrenLinks = new HashSet<String>();
