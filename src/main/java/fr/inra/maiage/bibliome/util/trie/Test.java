@@ -72,7 +72,7 @@ public class Test {
 	}
 	
 	private static Trie<String> loadTrie(String file) throws IOException {
-		return new Trie<String>(file, StringCodec.INSTANCE);
+		return new Trie<String>(file, StringCodec.INSTANCE, Integer.MAX_VALUE);
 	}
 	
 	public static void main(String[] args) throws IOException {
