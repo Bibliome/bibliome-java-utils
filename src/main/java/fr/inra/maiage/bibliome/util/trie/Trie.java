@@ -62,11 +62,11 @@ public class Trie<T> implements Closeable {
 	 * @param valueDecoder
 	 * @throws IOException
 	 */
-	public Trie(FileChannel channel, Decoder<T> valueDecoder) throws IOException {
-		stateUnmarshaller = new Unmarshaller<State<T>>(channel, new StateDecoder<T>(this));
+	public Trie(FileChannel channel, Decoder<T> valueDecoder, int maxMmapSize) throws IOException {
+		stateUnmarshaller = new Unmarshaller<State<T>>(channel, new StateDecoder<T>(this), maxMmapSize);
 		root = stateUnmarshaller.read(AbstractMarshaller.getPosition(channel));
-		Unmarshaller<T> valueUnmarshaller = new Unmarshaller<T>(channel, valueDecoder);
-		valuesUnmarshaller = new Unmarshaller<List<T>>(channel, new ValuesDecoder<T>(valueUnmarshaller));
+		Unmarshaller<T> valueUnmarshaller = new Unmarshaller<T>(channel, valueDecoder, maxMmapSize);
+		valuesUnmarshaller = new Unmarshaller<List<T>>(channel, new ValuesDecoder<T>(valueUnmarshaller), maxMmapSize);
 	}
 
 	/**
@@ -75,8 +75,8 @@ public class Trie<T> implements Closeable {
 	 * @param valueDecoder
 	 * @throws IOException
 	 */
-	public Trie(Path path, Decoder<T> valueDecoder) throws IOException {
-		this(FileChannel.open(path, StandardOpenOption.READ), valueDecoder);
+	public Trie(Path path, Decoder<T> valueDecoder, int maxMmapSize) throws IOException {
+		this(FileChannel.open(path, StandardOpenOption.READ), valueDecoder, maxMmapSize);
 	}
 	
 	/**
@@ -85,8 +85,8 @@ public class Trie<T> implements Closeable {
 	 * @param valueDecoder
 	 * @throws IOException
 	 */
-	public Trie(String path, Decoder<T> valueDecoder) throws IOException {
-		this(Paths.get(path), valueDecoder);
+	public Trie(String path, Decoder<T> valueDecoder, int maxMmapSize) throws IOException {
+		this(Paths.get(path), valueDecoder, maxMmapSize);
 	}
 
 	/**
@@ -95,8 +95,8 @@ public class Trie<T> implements Closeable {
 	 * @param valueDecoder
 	 * @throws IOException
 	 */
-	public Trie(File file, Decoder<T> valueDecoder) throws IOException {
-		this(file.toPath(), valueDecoder);
+	public Trie(File file, Decoder<T> valueDecoder, int maxMmapSize) throws IOException {
+		this(file.toPath(), valueDecoder, maxMmapSize);
 	}
 	
 	private long save(FileChannel channel, Encoder<T> valueEncoder, boolean close) throws IOException {

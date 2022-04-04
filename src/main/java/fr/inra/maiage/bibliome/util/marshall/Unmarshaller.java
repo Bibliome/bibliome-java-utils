@@ -34,9 +34,10 @@ import java.nio.file.StandardOpenOption;
 public class Unmarshaller<T> extends AbstractMarshaller<T> implements Closeable {
 	private final Decoder<T> decoder;
 	private final ReadCache<T> cache;
+	private final int maxMmapSize;
 	//private final MappedByteBuffer buf;
 	private long startPosition;
-	
+
 	/**
 	 * Creates a new unmarshaller.
 	 * @param channel channel from which objects are unmarshalled, must be opened in read mode
@@ -44,11 +45,12 @@ public class Unmarshaller<T> extends AbstractMarshaller<T> implements Closeable 
 	 * @param cache
 	 * @throws IOException
 	 */
-	public Unmarshaller(FileChannel channel, Decoder<T> decoder, ReadCache<T> cache) throws IOException {
+	public Unmarshaller(FileChannel channel, Decoder<T> decoder, ReadCache<T> cache, int maxMmapSize) throws IOException {
 		super(channel);
 		this.decoder = decoder;
 		this.cache = cache;
 		this.startPosition = getPosition(channel);
+		this.maxMmapSize = maxMmapSize;
 	}
 	
 	/**
@@ -57,8 +59,8 @@ public class Unmarshaller<T> extends AbstractMarshaller<T> implements Closeable 
 	 * @param decoder
 	 * @throws IOException
 	 */
-	public Unmarshaller(FileChannel channel, Decoder<T> decoder) throws IOException {
-		this(channel, decoder, null);
+	public Unmarshaller(FileChannel channel, Decoder<T> decoder, int maxMmapSize) throws IOException {
+		this(channel, decoder, null, maxMmapSize);
 	}
 	
 	/**
@@ -68,8 +70,8 @@ public class Unmarshaller<T> extends AbstractMarshaller<T> implements Closeable 
 	 * @param cache
 	 * @throws IOException
 	 */
-	public Unmarshaller(Path path, Decoder<T> decoder, ReadCache<T> cache) throws IOException {
-		this(FileChannel.open(path, StandardOpenOption.READ), decoder, cache);
+	public Unmarshaller(Path path, Decoder<T> decoder, ReadCache<T> cache, int maxMmapSize) throws IOException {
+		this(FileChannel.open(path, StandardOpenOption.READ), decoder, cache, maxMmapSize);
 	}
 	
 	/**
@@ -78,8 +80,8 @@ public class Unmarshaller<T> extends AbstractMarshaller<T> implements Closeable 
 	 * @param decoder
 	 * @throws IOException
 	 */
-	public Unmarshaller(Path path, Decoder<T> decoder) throws IOException {
-		this(path, decoder, null);
+	public Unmarshaller(Path path, Decoder<T> decoder, int maxMmapSize) throws IOException {
+		this(path, decoder, null, maxMmapSize);
 	}
 	
 	/**
@@ -89,8 +91,8 @@ public class Unmarshaller<T> extends AbstractMarshaller<T> implements Closeable 
 	 * @param cache
 	 * @throws IOException
 	 */
-	public Unmarshaller(File file, Decoder<T> decoder, ReadCache<T> cache) throws IOException {
-		this(file.toPath(), decoder, cache);
+	public Unmarshaller(File file, Decoder<T> decoder, ReadCache<T> cache, int maxMmapSize) throws IOException {
+		this(file.toPath(), decoder, cache, maxMmapSize);
 	}
 	
 	/**
@@ -99,8 +101,8 @@ public class Unmarshaller<T> extends AbstractMarshaller<T> implements Closeable 
 	 * @param decoder
 	 * @throws IOException
 	 */
-	public Unmarshaller(File file, Decoder<T> decoder) throws IOException {
-		this(file, decoder, null);
+	public Unmarshaller(File file, Decoder<T> decoder, int maxMmapSize) throws IOException {
+		this(file, decoder, null, maxMmapSize);
 	}
 
 	/**
@@ -150,7 +152,7 @@ public class Unmarshaller<T> extends AbstractMarshaller<T> implements Closeable 
 	public ByteBuffer getBuffer(long position) {
 		try {
 			long absPosition = startPosition + position;
-			long size = 1024 * 1024;
+			long size = Math.min(channel.size() - absPosition, maxMmapSize);
 			return channel.map(MapMode.READ_ONLY, absPosition, size);
 		}
 		catch (IOException e) {
