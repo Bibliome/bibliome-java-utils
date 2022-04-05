@@ -1,0 +1,5 @@
+0.0.2
+	- added ToMap documentation
+	- improved taxonomy rewriting
+	- added custom links for paths in OBOUtils
+	- added maxMmapSize parameter in Unmarshaller
