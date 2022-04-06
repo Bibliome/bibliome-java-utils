@@ -125,10 +125,9 @@ public class Unmarshaller<T> extends AbstractMarshaller<T> implements Closeable 
 			if (result != null)
 				return result;
 		}
-		
+
+		DataBuffer buf = new DataBuffer(channel, position);
 		// first pass decode
-		ByteBuffer buf = getBuffer(position);
-		//buf.position((int) position); // XXX unsafe cast
 		result = decoder.decode1(buf);
 		
 		// second pass decode

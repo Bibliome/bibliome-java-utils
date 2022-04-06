@@ -16,10 +16,10 @@ limitations under the License.
 
 package fr.inra.maiage.bibliome.util.trie;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import fr.inra.maiage.bibliome.util.marshall.DataBuffer;
 import fr.inra.maiage.bibliome.util.marshall.Decoder;
 import fr.inra.maiage.bibliome.util.marshall.Unmarshaller;
 
@@ -32,7 +32,7 @@ class ValuesDecoder<T> implements Decoder<List<T>> {
 	}
 
 	@Override
-	public List<T> decode1(ByteBuffer buffer) {
+	public List<T> decode1(DataBuffer buffer) {
 		int len = buffer.getInt();
 		List<T> result = new ArrayList<T>(len);
 		for (int i = 0; i < len; ++i)
@@ -41,6 +41,6 @@ class ValuesDecoder<T> implements Decoder<List<T>> {
 	}
 
 	@Override
-	public void decode2(ByteBuffer buffer, List<T> object) {
+	public void decode2(DataBuffer buffer, List<T> object) {
 	}
 }
