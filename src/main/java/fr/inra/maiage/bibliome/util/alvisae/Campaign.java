@@ -32,6 +32,9 @@ import fr.inra.maiage.bibliome.util.mappers.Mapper;
 import fr.inra.maiage.bibliome.util.mappers.Mappers;
 
 public class Campaign {
+	static final String TABLE = "campaign";
+	static final String NAME_FIELD = "name";
+	static final String ID_FIELD = "id";
 	static final String ASSIGNMENT_TABLE = "documentassignment";
 	static final String FIELD_DOCUMENT_REFERENCE = "doc_id";
 	static final String FIELD_CAMPAIGN_REFERENCE = "campaign_id";
@@ -40,6 +43,7 @@ public class Campaign {
 	private final String schema;
 	private final int id;
 	private final Map<Integer,AlvisAEDocument> documents = new TreeMap<Integer,AlvisAEDocument>();
+	private String name;
 	
 	public Campaign(boolean oldModel, String schema, int id) {
 		super();
@@ -68,6 +72,10 @@ public class Campaign {
 		return id;
 	}
 	
+	public String getName() {
+		return name;
+	}
+
 	public Collection<AlvisAEDocument> getDocuments() {
 		return Collections.unmodifiableCollection(documents.values());
 	}
@@ -212,7 +220,19 @@ public class Campaign {
 		loadAnnotationSets(logger, connection, options, null);
 	}
 	
+	public void loadName(Logger logger, Connection connection, LoadOptions options) throws SQLException {
+		SQLSelectQueryBuilder query = new SQLSelectQueryBuilder(schema);
+		query.addSelect(Campaign.NAME_FIELD);
+		query.addFrom(Campaign.TABLE);
+		query.addWhereClause(Campaign.TABLE, Campaign.ID_FIELD, id);
+		ResultSet rs = query.runQuery(connection, logger);
+		while (rs.next()) {
+			this.name = rs.getString(Campaign.NAME_FIELD);
+		}
+	}
+
 	public void load(Logger logger, Connection connection, LoadOptions options) throws SQLException, ParseException {
+		loadName(logger, connection, options);
 		loadDocuments(logger, connection, options);
 		loadAnnotationSets(logger, connection, options);
 	}
