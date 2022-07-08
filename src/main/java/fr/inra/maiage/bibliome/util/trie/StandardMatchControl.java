@@ -43,6 +43,7 @@ public class StandardMatchControl implements MatchControl {
 	private boolean joinDash = false;
 	private boolean skipWhitespace = false;
 	private boolean skipConsecutiveWhitespaces = false;
+	private boolean substituteWhitespace = false;
 
 	/**
 	 * Creates a new standard match control with default values.
@@ -129,6 +130,9 @@ public class StandardMatchControl implements MatchControl {
 
 	@Override
 	public char canonize(int prev, char c) {
+		if (substituteWhitespace && (Character.isWhitespace(c) || (c == '\u00A0') || (c == '\u2007') || (c == '\u202F'))) {
+			return ' ';
+		}
 		if (ignoreDiacritics)
 			c = removeDiacritics(c);
 		if (foldCase(prev, c))
@@ -277,6 +281,18 @@ public class StandardMatchControl implements MatchControl {
 	 */
 	public boolean isAllUpperCaseInsensitive() {
 		return allUpperCaseInsensitive;
+	}
+
+	/**
+	 * Returns either all whitespace characters match each other.
+	 * @return
+	 */
+	public boolean isSubstituteWhitespace() {
+		return substituteWhitespace;
+	}
+
+	public void setSubstituteWhitespace(boolean substituteWhitespace) {
+		this.substituteWhitespace = substituteWhitespace;
 	}
 
 	public void setAllUpperCaseInsensitive(boolean allUpperCaseInsensitive) {
