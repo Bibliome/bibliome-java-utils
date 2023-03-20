@@ -19,9 +19,7 @@ package fr.inra.maiage.bibliome.util.marshall;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.channels.FileChannel.MapMode;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
@@ -34,9 +32,6 @@ import java.nio.file.StandardOpenOption;
 public class Unmarshaller<T> extends AbstractMarshaller<T> implements Closeable {
 	private final Decoder<T> decoder;
 	private final ReadCache<T> cache;
-	private final int maxMmapSize;
-	//private final MappedByteBuffer buf;
-	private long startPosition;
 
 	/**
 	 * Creates a new unmarshaller.
@@ -45,12 +40,10 @@ public class Unmarshaller<T> extends AbstractMarshaller<T> implements Closeable 
 	 * @param cache
 	 * @throws IOException
 	 */
-	public Unmarshaller(FileChannel channel, Decoder<T> decoder, ReadCache<T> cache, int maxMmapSize) throws IOException {
+	public Unmarshaller(FileChannel channel, Decoder<T> decoder, ReadCache<T> cache) throws IOException {
 		super(channel);
 		this.decoder = decoder;
 		this.cache = cache;
-		this.startPosition = getPosition(channel);
-		this.maxMmapSize = maxMmapSize;
 	}
 	
 	/**
@@ -59,8 +52,8 @@ public class Unmarshaller<T> extends AbstractMarshaller<T> implements Closeable 
 	 * @param decoder
 	 * @throws IOException
 	 */
-	public Unmarshaller(FileChannel channel, Decoder<T> decoder, int maxMmapSize) throws IOException {
-		this(channel, decoder, null, maxMmapSize);
+	public Unmarshaller(FileChannel channel, Decoder<T> decoder) throws IOException {
+		this(channel, decoder, null);
 	}
 	
 	/**
@@ -70,8 +63,8 @@ public class Unmarshaller<T> extends AbstractMarshaller<T> implements Closeable 
 	 * @param cache
 	 * @throws IOException
 	 */
-	public Unmarshaller(Path path, Decoder<T> decoder, ReadCache<T> cache, int maxMmapSize) throws IOException {
-		this(FileChannel.open(path, StandardOpenOption.READ), decoder, cache, maxMmapSize);
+	public Unmarshaller(Path path, Decoder<T> decoder, ReadCache<T> cache) throws IOException {
+		this(FileChannel.open(path, StandardOpenOption.READ), decoder, cache);
 	}
 	
 	/**
@@ -80,8 +73,8 @@ public class Unmarshaller<T> extends AbstractMarshaller<T> implements Closeable 
 	 * @param decoder
 	 * @throws IOException
 	 */
-	public Unmarshaller(Path path, Decoder<T> decoder, int maxMmapSize) throws IOException {
-		this(path, decoder, null, maxMmapSize);
+	public Unmarshaller(Path path, Decoder<T> decoder) throws IOException {
+		this(path, decoder, null);
 	}
 	
 	/**
@@ -91,8 +84,8 @@ public class Unmarshaller<T> extends AbstractMarshaller<T> implements Closeable 
 	 * @param cache
 	 * @throws IOException
 	 */
-	public Unmarshaller(File file, Decoder<T> decoder, ReadCache<T> cache, int maxMmapSize) throws IOException {
-		this(file.toPath(), decoder, cache, maxMmapSize);
+	public Unmarshaller(File file, Decoder<T> decoder, ReadCache<T> cache) throws IOException {
+		this(file.toPath(), decoder, cache);
 	}
 	
 	/**
@@ -101,8 +94,8 @@ public class Unmarshaller<T> extends AbstractMarshaller<T> implements Closeable 
 	 * @param decoder
 	 * @throws IOException
 	 */
-	public Unmarshaller(File file, Decoder<T> decoder, int maxMmapSize) throws IOException {
-		this(file, decoder, null, maxMmapSize);
+	public Unmarshaller(File file, Decoder<T> decoder) throws IOException {
+		this(file, decoder, null);
 	}
 
 	/**
@@ -125,12 +118,11 @@ public class Unmarshaller<T> extends AbstractMarshaller<T> implements Closeable 
 			if (result != null)
 				return result;
 		}
-		
+
+		DataBuffer buf = new DataBuffer(channel, position);
 		// first pass decode
-		ByteBuffer buf = getBuffer(position);
-		//buf.position((int) position); // XXX unsafe cast
 		result = decoder.decode1(buf);
-		
+	
 		// second pass decode
 		if (cache != null)
 			cache.put(position, result);
@@ -147,17 +139,6 @@ public class Unmarshaller<T> extends AbstractMarshaller<T> implements Closeable 
 
 	public ReadCache<T> getCache() {
 		return cache;
-	}
-	
-	public ByteBuffer getBuffer(long position) {
-		try {
-			long absPosition = startPosition + position;
-			long size = Math.min(channel.size() - absPosition, maxMmapSize);
-			return channel.map(MapMode.READ_ONLY, absPosition, size);
-		}
-		catch (IOException e) {
-			throw new RuntimeException(e);
-		}
 	}
 //	
 //	public ByteBuffer getBuffer() {

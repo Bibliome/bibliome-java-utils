@@ -40,7 +40,7 @@ public enum StringCodec implements Encoder<String>, Decoder<String> {
 	}
 
 	@Override
-	public String decode1(ByteBuffer buffer) {
+	public String decode1(DataBuffer buffer) {
 		int len = buffer.getInt();
 		char[] s = new char[len];
 		for (int i = 0; i < len; ++i)
@@ -49,6 +49,6 @@ public enum StringCodec implements Encoder<String>, Decoder<String> {
 	}
 
 	@Override
-	public void decode2(ByteBuffer buffer, String object) {
+	public void decode2(DataBuffer buffer, String object) {
 	}
 }

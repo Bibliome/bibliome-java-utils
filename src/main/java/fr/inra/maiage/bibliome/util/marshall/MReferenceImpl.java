@@ -16,8 +16,6 @@ limitations under the License.
 
 package fr.inra.maiage.bibliome.util.marshall;
 
-import java.io.IOException;
-
 /**
  * Marshall reference implementation.
  * @author rbossy

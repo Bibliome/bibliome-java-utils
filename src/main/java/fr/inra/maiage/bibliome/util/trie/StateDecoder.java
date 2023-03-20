@@ -16,9 +16,9 @@ limitations under the License.
 
 package fr.inra.maiage.bibliome.util.trie;
 
-import java.nio.ByteBuffer;
 import java.util.List;
 
+import fr.inra.maiage.bibliome.util.marshall.DataBuffer;
 import fr.inra.maiage.bibliome.util.marshall.Decoder;
 import fr.inra.maiage.bibliome.util.marshall.MReference;
 import fr.inra.maiage.bibliome.util.marshall.MReferenceImpl;
@@ -32,7 +32,7 @@ class StateDecoder<T> implements Decoder<State<T>> {
 	}
 
 	@Override
-	public State<T> decode1(ByteBuffer buffer) {
+	public State<T> decode1(DataBuffer buffer) {
 		State<T> result = null;
 		int n = buffer.getInt();
 		for (int i = 0; i < n; ++i) {
@@ -47,6 +47,6 @@ class StateDecoder<T> implements Decoder<State<T>> {
 	}
 
 	@Override
-	public void decode2(ByteBuffer buffer, State<T> object) {
+	public void decode2(DataBuffer buffer, State<T> object) {
 	}
 }

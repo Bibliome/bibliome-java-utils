@@ -17,7 +17,6 @@ limitations under the License.
 package fr.inra.maiage.bibliome.util.marshall;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 /**
  * Data decoder.
@@ -33,7 +32,7 @@ public interface Decoder<T> {
 	 * @return the decoded object.
 	 * @throws IOException 
 	 */
-	T decode1(ByteBuffer buffer);
+	T decode1(DataBuffer buffer);
 	
 	/**
 	 * Second pass data decoding.
@@ -41,6 +40,7 @@ public interface Decoder<T> {
 	 * Implement this method for data structures with circular references.
 	 * @param buffer
 	 * @param object
+	 * @throws IOException 
 	 */
-	void decode2(ByteBuffer buffer, T object);
+	void decode2(DataBuffer buffer, T object);
 }
