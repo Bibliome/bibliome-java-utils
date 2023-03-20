@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>fr.jouy.inra.maiage.bibliome</groupId>
   <artifactId>bibliome-utils</artifactId>
-  <version>0.0.3-SNAPSHOT</version>
+  <version>0.0.3</version>
   <name>Bibliome Utils</name>
 
   <properties>
