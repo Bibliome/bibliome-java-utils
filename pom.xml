@@ -130,9 +130,9 @@
     </dependency>
 
     <dependency>
-      <groupId>org.ggf.drmaa</groupId>
-      <artifactId>drmaa</artifactId>
-      <version>UNKNOWN</version>
+      <groupId>us.levk</groupId>
+      <artifactId>drmaa-common</artifactId>
+      <version>1.0</version>
     </dependency>
 
     <dependency>
