@@ -1,1 +1,28 @@
-Bibliome Java Utilities
+# Bibliome Java Utilities
+
+
+## Install unmaintained libraries
+
+```
+mvn install:install-file -Dfile=obo-UNKNOWN.jar -DgroupId=org.obo -DartifactId=obo -Dversion=UNKNOWN -Dpackaging=jar -DgeneratePom=true
+mvn install:install-file -Dfile=bbop-UNKNOWN.jar -DgroupId=org.bbop -DartifactId=bbop -Dversion=UNKNOWN -Dpackaging=jar -DgeneratePom=true
+```
+
+
+## Install AlvisIR
+
+```
+git clone https://github.com/Bibliome/alvisir.git
+cd alvisir
+mvn clean install
+```
+
+
+## Compile and install
+
+```
+git clone https://github.com/Bibliome/bibliome-java-utils.git
+cd bibliome-java-utils
+mvn clean install
+```
+
